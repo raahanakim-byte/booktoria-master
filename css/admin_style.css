@@ -1,0 +1,590 @@
+/* Dark Glass — Sidebar + Admin Layout (Complete replacement)
+   - Fixed glass sidebar with inline SVG icons
+   - Vertical dashboard stats
+   - Horizontal products list (admin_products.php)
+   - Vertical add-product form
+   - Users/messages in glass boxes with safe delete buttons
+   - New circular profile icon
+   - Keeps original class names where possible
+*/
+
+/* Font */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap');
+
+:root{
+  --bg-dark: #06070a;               /* page background */
+  --panel: rgba(255,255,255,0.03);  /* panel tint */
+  --panel-strong: rgba(255,255,255,0.045);
+  --glass-border: rgba(255,255,255,0.06);
+  --accent-a: #00f0ff;              /* cyan */
+  --accent-b: #a84bff;              /* magenta */
+  --muted: #9aa4af;
+  --text: #e7eef6;
+  --danger: #ff6b6b;
+  --radius-lg: 14px;
+  --radius-md: 10px;
+  --radius-sm: 8px;
+  --blur: 14px;
+  --shadow-lg: 0 18px 60px rgba(2,6,23,0.75);
+  --shadow-md: 0 8px 30px rgba(2,6,23,0.6);
+  --glass-edge: 1px solid rgba(255,255,255,0.03);
+  --transition-fast: 180ms cubic-bezier(.2,.9,.3,1);
+  --transition-smooth: 320ms cubic-bezier(.2,.9,.3,1);
+  --sidebar-width: 240px;
+}
+
+/* Reset and base */
+*{box-sizing:border-box;margin:0;padding:0}
+html{font-size:62.5%;height:100%}
+body{
+  min-height:100%;
+  font-family:"Poppins",system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;
+  background:
+    radial-gradient(1000px 400px at 10% 10%, rgba(168,75,255,0.06), transparent 6%),
+    radial-gradient(900px 360px at 90% 90%, rgba(0,240,255,0.04), transparent 8%),
+    var(--bg-dark);
+  color:var(--text);
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  line-height:1.45;
+  
+}
+
+/* selection */
+*::selection{background:linear-gradient(90deg,var(--accent-a),var(--accent-b));color:#04101a}
+
+/* custom scrollbar */
+*::-webkit-scrollbar{width:12px;height:12px}
+*::-webkit-scrollbar-track{background:transparent}
+*::-webkit-scrollbar-thumb{
+  background: linear-gradient(180deg,var(--accent-b),var(--accent-a));
+  border-radius:999px;border:3px solid rgba(0,0,0,0.18);
+}
+
+/* ---------- SIDEBAR (fixed always visible) ---------- */
+.header{
+  position:fixed;
+  left:0; top:0;
+  height:100vh;
+  width:var(--sidebar-width);
+  padding:28px 18px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:20px;
+  z-index:1200;
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+  border-right: var(--glass-edge);
+  box-shadow: var(--shadow-lg);
+  backdrop-filter: blur(var(--blur)) saturate(120%);
+}
+
+/* logo area */
+.header .logo{
+  font-weight:600;
+  font-size:2.1rem;
+  color:var(--text);
+  display:flex;
+  align-items:center;
+  gap:.8rem;
+  padding:6px 8px;
+}
+.header .logo span{
+  background: linear-gradient(90deg,var(--accent-a),var(--accent-b));
+  -webkit-background-clip:text;
+  background-clip:text;
+  color:transparent;
+}
+
+/* nav list vertical */
+.header .navbar{
+  width:100%;
+  display:flex;
+  flex-direction:column;
+  gap:.4rem;
+  margin-top:8px;
+  padding-top:8px;
+}
+.header .navbar a{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:12px 14px;
+  border-radius:12px;
+  color:var(--muted);
+  text-decoration:none;
+  font-size:1.6rem;
+  transition: all var(--transition-fast);
+  position:relative;
+  overflow:visible;
+}
+
+/* icon container (SVG backgrounds inserted via CSS) */
+.header .navbar a .nav-icon{
+  width:34px; height:34px;
+  min-width:34px;
+  display:inline-grid;
+  place-items:center;
+  border-radius:8px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+  border: 1px solid rgba(255,255,255,0.02);
+  box-shadow: 0 6px 20px rgba(2,6,23,0.45);
+}
+
+/* active and hover styles */
+.header .navbar a:hover,
+.header .navbar a.active{
+  color:var(--text);
+  transform: translateY(-3px);
+  background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.015));
+  box-shadow: 0 12px 40px rgba(10,12,20,0.6);
+}
+.header .navbar a:hover .nav-icon,
+.header .navbar a.active .nav-icon{
+  background: linear-gradient(90deg,var(--accent-b),var(--accent-a));
+  box-shadow: 0 10px 30px rgba(102,84,255,0.12);
+}
+
+/* small nav label */
+.header .navbar a .nav-label{
+  display:inline-block;
+  white-space:nowrap;
+}
+
+/* profile avatar (replace old icon) */
+.header .profile-wrap{
+  margin-top:auto;
+  width:100%;
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:8px;
+  border-radius:12px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.015), rgba(255,255,255,0.01));
+  border:1px solid rgba(255,255,255,0.02);
+}
+.profile-icon{
+  width:48px;height:48px;border-radius:999px;
+  display:inline-grid;place-items:center;
+  font-weight:600;color:#031019;
+  background: linear-gradient(135deg,var(--accent-a),var(--accent-b));
+  box-shadow: 0 8px 30px rgba(102,84,255,0.12);
+  flex-shrink:0;
+  overflow:hidden;
+}
+.profile-info{font-size:1.4rem;color:var(--muted)}
+.profile-info .name{font-weight:600;color:var(--text)}
+
+/* ---------- MAIN CONTENT AREA ---------- */
+section{
+  margin-left: calc(var(--sidebar-width) + 2.4rem);
+  padding:28px;
+  min-height:100vh;
+  transition: margin-left var(--transition-smooth);
+}
+
+/* container card base for reuse */
+.card{
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+  border: var(--glass-edge);
+  border-radius:var(--radius-md);
+  padding:16px;
+  box-shadow: var(--shadow-md);
+  backdrop-filter: blur(var(--blur)) saturate(120%);
+  transition: transform var(--transition-smooth), box-shadow var(--transition-smooth);
+}
+
+/* small headings */
+.h-group{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.h-title{font-size:2.4rem;font-weight:600;color:var(--text)}
+
+/* ---------- DASHBOARD: vertical stats ---------- */
+.dashboard .box-container{
+  display:flex;
+  flex-direction:column;
+  gap:16px;
+  max-width:46rem;
+  margin:0 auto;
+}
+.dashboard .box{
+  padding:10px 14px;
+  display:flex;
+  flex-direction:row;
+  align-items:center;
+  gap:14px;
+  justify-content:space-between;
+  border-radius: 10px;
+  background: linear-gradient(90deg,var(--accent-b),var(--accent-a));
+  color: #021017;
+  font-weight: 600;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+.dashboard .box .stat-left{
+  display:flex;
+  gap:12px;
+  align-items:center;
+}
+.dashboard .box .stat-icon{
+  width:56px;height:56px;border-radius:12px;display:grid;place-items:center;
+  background: linear-gradient(90deg,var(--accent-b),var(--accent-a)); 
+  color:#031019;
+  font-weight:700;
+  box-shadow: 0 10px 40px rgba(102,84,255,0.08);
+}
+.dashboard .box .stat-title{font-size:1.6rem;color:var(--muted)}
+.dashboard .box .stat-value{font-size:2.4rem;font-weight:700;color:var(--text)}
+.dashboard .box:hover{transform:translateY(-6px)}
+
+/* vertical list order (labels you requested) - rely on HTML for content */
+.stat-list{display:flex;flex-direction:column;gap:10px;width:100%}
+
+/* ---------- ADMIN PRODUCTS: horizontal product layout ---------- */
+/* Use .show-products .box-container and .show-products .box (keeps class names) */
+.show-products .box-container{
+  display:flex;
+  flex-direction:row;
+  flex-wrap: nowrap;
+  gap:16px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+ 
+}
+.show-products .box{
+ flex: 0 0 auto;
+  width: 300px;             /* fixed width for horizontal scrolling */
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+  border: 1px solid rgba(255,255,255,0.03);
+  border-radius: var(--radius-md);
+  padding: 18px;
+  box-shadow: var(--shadow-md);
+  backdrop-filter: blur(var(--blur)) saturate(120%);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.show-products .box .image{
+  flex:0 0 220px;
+  height:140px;
+  border-radius:10px;
+  overflow:hidden;
+  border:1px solid rgba(255,255,255,0.03);
+  background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+}
+.show-products .box .image img{width:100%;height:100%;object-fit:cover;display:block}
+.show-products .box .meta{
+  flex:1; display:flex;flex-direction:column;gap:8px;
+}
+.show-products .box .meta .name{font-size:1.8rem;font-weight:600;color:var(--text)}
+.show-products .box .meta .desc{font-size:1.4rem;color:var(--muted)}
+.show-products .box .meta .meta-row{display:flex;gap:12px;align-items:center;margin-top:6px}
+.show-products .box .meta .price{font-weight:700;color:var(--accent-a);font-size:1.6rem}
+.show-products .box .actions{display:flex;gap:10px;align-items:center}
+
+.show-products .box-container .box .option-btn{
+  width: 80px;
+  padding:10px 14px;
+  border-radius:8px;
+  font-size:1.4rem;
+  cursor:pointer;
+  background:linear-gradient(90deg,var(--accent-b),var(--accent-a));
+  color:#021017;
+  border:none;
+  text-decoration: none;
+  cursor: pointer;
+}
+.show-products .box-container .box .option-btn:hover{
+  background: #eb20f2;
+}
+.orders .box-container .box .option-btn{
+  width: 80px;
+  padding:8px 12px;
+  border-radius:8px;
+  font-size:1.4rem;
+  cursor:pointer;
+  background:linear-gradient(90deg,var(--accent-b),var(--accent-a));
+  color:#021017;
+  border:1px solid rgba(255,255,255,0.03);
+}
+.orders .box-container .box .option-btn:hover{
+  background: #eb20f2;
+}
+/* action buttons small and unobtrusive (edit/delete) */
+
+.delete-btn {
+  width: 80px;
+  padding:8px 12px;
+  border-radius:8px;
+  font-size:1.4rem;
+  cursor:pointer;
+  background:linear-gradient(90deg,var(--accent-b),var(--accent-a));
+  color:#021017;
+  border:1px solid rgba(255,255,255,0.03);   
+  text-decoration: none;
+}
+
+.delete-btn:hover {
+    background: rgba(236, 28, 5, 0.941);
+}
+.logout-btn {
+  width: 80px;
+  padding:4px 8px;
+  border-radius:10px;
+  font-size:1.4rem;
+  cursor:pointer;
+  background:linear-gradient(90deg,var(--accent-b),var(--accent-a));
+  color:#021017;
+  border:1px solid rgba(255,255,255,0.03);   
+}
+
+.logout-btn:hover {
+    background: rgba(236, 28, 5, 0.941);
+}
+
+
+
+
+
+
+    
+    
+
+/* ---------- ADD PRODUCT FORM: vertical layout ---------- */
+.add-products form{
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  max-width:520px;
+  margin:0 auto;
+  padding:20px;
+}
+.add-products form label{font-size:1.4rem;color:var(--muted)}
+.add-products form input[type="text"],
+.add-products form input[type="number"],
+.add-products form textarea,
+.add-products form select{
+  width:100%;
+  padding:10px 12px;border-radius:8px;border:1px solid rgba(255,255,255,0.03);
+  background: rgba(255,255,255,0.02); color:var(--text); font-size:1.5rem;
+}
+.add-products form textarea{min-height:140px;resize:vertical}
+.add-products form .form-actions{display:flex;gap:12px;justify-content:flex-end;margin-top:6px}
+.add-products form .btn{
+  padding:10px 14px;
+  border-radius:10px;
+  background:linear-gradient(90deg,var(--accent-b),var(--accent-a));
+  color:#021017;
+  font-weight:600;
+  border:none;
+  font-size:1.5rem;
+  cursor:pointer;
+}
+
+
+/* ---------- USERS: each user inside a box; delete button below info ---------- */
+.users .box-container{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
+  gap:14px;
+  max-width:1100px;margin:0 auto;
+}
+.users .box{
+  padding:14px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  position:relative;
+  min-height:120px;
+}
+.users .box .user-row{display:flex;gap:12px;align-items:center}
+.users .box .avatar{
+  width:72px;height:72px;border-radius:12px;overflow:hidden;flex-shrink:0;
+  background:linear-gradient(90deg,var(--accent-b),var(--accent-a));display:grid;place-items:center;color:#021017;font-weight:700;font-size:1.6rem;
+}
+.users .box .user-info{display:flex;flex-direction:column;gap:4px}
+.users .box .user-info .u-name{font-size:1.6rem;font-weight:600;color:var(--text)}
+.users .box .user-info .u-meta{font-size:1.4rem;color:var(--muted)}
+/* place delete button in footer so it doesn't overlap info */
+.users .box .card-footer{
+  display:flex;justify-content:flex-end;padding-top:8px;border-top:1px dashed rgba(255,255,255,0.02);margin-top:8px;
+}
+.users .box .card-footer .delete-btn{
+  background: linear-gradient(90deg,#ff8686,#ff6b6b);
+  color:#021017;padding:8px 12px;border-radius:8px;border:none;font-weight:600;cursor:pointer;font-size:1.4rem;
+}
+
+/* ---------- MESSAGES: each message inside box with footer delete ---------- */
+.messages .box-container{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(360px,1fr));
+  gap:14px;
+  max-width:1100px;margin:0 auto;
+}
+.messages .box{
+  padding:16px;display:flex;flex-direction:column;gap:8px;min-height:120px;
+}
+.messages .box .msg-head{display:flex;gap:12px;align-items:center}
+.messages .box .sender-avatar{
+  width:50px;height:50px;border-radius:10px;background:linear-gradient(90deg,var(--accent-a),var(--accent-b));display:grid;place-items:center;font-weight:700;color:#021017;
+}
+.messages .box .sender-meta{display:flex;flex-direction:column}
+.messages .box .sender-meta .name{font-weight:700;color:var(--text);font-size:1.5rem}
+.messages .box .sender-meta .when{font-size:1.3rem;color:var(--muted)}
+.messages .box .msg-body{font-size:1.45rem;color:var(--text);line-height:1.5;white-space:pre-wrap;margin-top:6px;flex:1}
+
+/* footer holds delete button unobtrusively */
+.messages .box .card-footer{
+  display:flex;justify-content:flex-end;padding-top:10px;margin-top:8px;border-top:1px dashed rgba(255,255,255,0.02)
+}
+.messages .box .card-footer .delete-btn{
+  background: linear-gradient(90deg,#ff9a9a,#ff6b6b);
+  padding:8px 12px;border-radius:8px;border:none;font-weight:600;color:#031017;cursor:pointer;font-size:1.4rem;
+}
+
+/* ---------- GLOBAL BUTTON STYLING ---------- */
+.btn{
+  display:inline-flex;align-items:center;gap:8px;justify-content:center;
+  padding:8px 12px;border-radius:10px;background:linear-gradient(90deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01));
+  color:var(--text);border:1px solid rgba(255,255,255,0.03);cursor:pointer;font-weight:600;
+  transition: all var(--transition-fast);
+}
+.btn:hover{transform:translateY(-4px);box-shadow:0 10px 40px rgba(2,6,23,0.6)}
+
+/* small variant */
+.btn.small{padding:6px 8px;font-size:1.3rem;border-radius:8px}
+
+/* ---------- utility: icon SVGs via data-URI on pseudo-elements ---------- */
+/* Each .nav-icon will use :before to show the icon so you don't need external font libs */
+.header .navbar a.home .nav-icon::before,
+.header .navbar a.products .nav-icon::before,
+.header .navbar a.orders .nav-icon::before,
+.header .navbar a.users .nav-icon::before,
+.header .navbar a.messages .nav-icon::before{
+  content:"";
+  display:block;width:20px;height:20px;background-repeat:no-repeat;background-position:center;background-size:20px 20px;
+  filter: drop-shadow(0 2px 6px rgba(0,0,0,0.4));
+}
+
+/* HOME icon (house) */
+.header .navbar a.home .nav-icon::before{
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'><path d='M3 11.5L12 5l9 6.5'/><path d='M5 11.5V19a1 1 0 0 0 1 1h3v-6h6v6h3a1 1 0 0 0 1-1v-7.5'/></svg>");
+}
+
+/* PRODUCTS icon (box) */
+.header .navbar a.products .nav-icon::before{
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'><path d='M21 16V8a2 2 0 0 0-1-1.73L13 3.27a2 2 0 0 0-2 0L4 6.27A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4.46a2 2 0 0 0 2 0l7-4.46A2 2 0 0 0 21 16z'/></svg>");
+}
+
+/* ORDERS icon (bag) */
+.header .navbar a.orders .nav-icon::before{
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'><path d='M6 2l1.5 4h9L18 2'/><path d='M3 8h18v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8z'/></svg>");
+}
+
+/* USERS icon (people) */
+.header .navbar a.users .nav-icon::before{
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'><path d='M17 21v-2a4 4 0 0 0-3-3.87'/><path d='M7 21v-2a4 4 0 0 1 3-3.87'/><circle cx='12' cy='7' r='3'/></svg>");
+}
+
+/* MESSAGES icon (chat) */
+.header .navbar a.messages .nav-icon::before{
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'><path d='M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z'/></svg>");
+}
+
+/* ---------- small responsive tweaks ---------- */
+@media (max-width: 980px){
+  :root{ --sidebar-width:200px }
+  .header{ width:var(--sidebar-width); padding:22px 12px }
+  section{ margin-left: calc(var(--sidebar-width) + 1.6rem); padding:18px }
+  .header .logo{ font-size:1.9rem }
+  .header .navbar a{ font-size:1.5rem; padding:10px 12px }
+}
+
+@media (max-width: 680px){
+  /* keep sidebar visible as requested (no collapse), but shrink labels */
+  .header{ width:180px }
+  .header .navbar a .nav-label{ display:none }
+  .header .navbar a{ justify-content:center }
+  section{ margin-left: calc(180px + 1.2rem); padding:14px }
+}
+
+/* ---------- accessibility & focus ---------- */
+.header .navbar a:focus{ outline:2px solid rgba(255,255,255,0.04); box-shadow:0 8px 30px rgba(0,0,0,0.5) }
+
+/* ---------- lightweight helpers (not required) ---------- */
+.center{display:flex;justify-content:center;align-items:center}
+.text-muted{color:var(--muted);font-size:1.4rem}
+.small{font-size:1.3rem}
+
+/* ---------- ensure delete buttons never overlap card content on small heights ---------- */
+/* If card height becomes small, footer stays visible and pushes content */
+.users .box, .messages .box, .show-products .box, .dashboard .box{
+  display:flex;flex-direction:column;justify-content:space-between;
+}
+.edit-product-form {
+   position: fixed;
+   top: 0;
+   left: 0;
+   z-index: 100;
+   width: 100%;
+   height: 80vh;
+   background:rgba(90, 18, 207, 0.02); color:var(--text); font-size:1.5rem;;
+   display: flex;
+   justify-content: center;
+   padding: 2rem;
+   overflow-y: auto; /* ENABLE SCROLLING */
+   box-sizing: border-box; /* Prevents padding from affecting height */
+}
+
+.edit-product-form form {
+   flex-direction: column;
+   gap: 10px;
+   width: 150%;
+   max-width: 300px;
+   background: linear-gradient(90deg,var(--accent-b),var(--accent-a));
+   padding: 20px;
+   margin: auto;
+   border-radius: .5rem;
+   text-align: left;
+   position: relative;
+   box-sizing: border-box;
+   height: 620px;
+   
+}
+
+.edit-product-form .option-btn {  display:inline-flex;align-items:center;gap:8px;justify-content:center;
+  padding:8px 12px;border-radius:10px;background:linear-gradient(90deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01));
+  color:var(--text);border:1px solid rgba(255,255,255,0.03);cursor:pointer;font-weight:600;
+  transition: all var(--transition-fast);}
+
+.edit-product-form .option-btn:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 40px rgba(2, 6, 23, 0.6);
+}
+  
+
+
+.edit-product-form form img{
+   height: 15rem;
+   margin-bottom: 1rem;
+}
+
+.edit-product-form form .box{
+   margin:1rem 0;
+   padding:1.2rem 1.4rem;
+   border:var(--border);
+   border-radius: .5rem;
+   background: rgba(255, 255, 255, 0.299);
+   font-size: 1.8rem;
+   color:var(--black);
+   width: 100%;
+}
+.edit-product-form form .form-actions {
+  display: flex;
+  justify-content: flex-end; /* button to right */
+  gap: 10px;
+  margin-top: 10px;
+}
+
+
+/* End of stylesheet */
