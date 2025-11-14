@@ -1,0 +1,35 @@
+/* Use the same warm color scheme as login page */
+.auth-page { background: linear-gradient(135deg, #f6d365 0%, #fda085 100%); min-height: 100vh; display:flex; align-items:center; justify-content:center; font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+
+.auth-container { display:grid; grid-template-columns:1fr 1fr; max-width:1000px; width:90%; background:#fff; border-radius:20px; box-shadow:0 20px 40px rgba(0,0,0,0.12); overflow:hidden; min-height:600px; }
+
+.auth-card { padding:3rem; display:flex; flex-direction:column; justify-content:center; }
+
+.auth-header { text-align:center; margin-bottom:2rem; }
+.auth-header h1 { font-size:2.2rem; font-weight:700; color:#333; margin-bottom:0.5rem; }
+.auth-header p { color:#666; font-size:1rem; }
+
+.auth-form { width:100%; }
+.form-group { margin-bottom:1.5rem; }
+.form-label { display:block; margin-bottom:0.5rem; font-weight:600; color:#444; font-size:0.95rem; }
+
+.input-group { position:relative; display:flex; align-items:center; }
+.input-icon { position:absolute; left:1rem; color:#bbb; z-index:2; }
+.form-input { width:100%; padding:1rem 1rem 1rem 3rem; border:2px solid #eee; border-radius:10px; font-size:1rem; transition:all 0.3s ease; background:#fafafa; color:#333; }
+.form-input:focus { outline:none; border-color:#ff6b6b; background:#fff; box-shadow:0 0 0 3px rgba(255,107,107,0.15); }
+
+.auth-btn.primary { width:100%; padding:1rem 2rem; border:none; border-radius:10px; font-size:1.1rem; font-weight:600; cursor:pointer; background:#ff6b6b; color:white; display:flex; align-items:center; justify-content:center; gap:0.5rem; transition:all 0.3s ease; margin-bottom:1.5rem; }
+.auth-btn.primary:hover { transform:translateY(-2px); box-shadow:0 10px 20px rgba(255,107,107,0.25); }
+
+.auth-footer { text-align:center; color:#555; }
+.auth-link { color:#ff6b6b; text-decoration:none; font-weight:600; transition:color 0.3s ease; }
+.auth-link:hover { color:#e74c3c; text-decoration:underline; }
+
+.auth-decoration { background:#ffe5d9; color:#333; display:flex; align-items:center; justify-content:center; padding:3rem; text-align:center; }
+.decoration-content { max-width:300px; }
+.decoration-icon { font-size:4rem; margin-bottom:1.5rem; opacity:0.9; }
+.decoration-content h2 { font-size:2rem; margin-bottom:1rem; font-weight:600; }
+.decoration-content p { font-size:1rem; opacity:0.8; line-height:1.5; }
+
+@media(max-width:768px){ .auth-container{grid-template-columns:1fr; width:95%; margin:1rem;} .auth-decoration{display:none;} .auth-card{padding:2rem;} }
+@media(max-width:480px){ .auth-card{padding:1.5rem;} .auth-header h1{font-size:1.75rem;} }

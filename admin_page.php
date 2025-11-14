@@ -1,144 +1,187 @@
 <?php
-
 include 'config.php';
-
 session_start();
+if(!isset($_SESSION['admin_id'])) header('location:login.php');
 
-$admin_id = $_SESSION['admin_id'];
-
-if(!isset($admin_id)){
-   header('location:login.php');
+// Fetch dashboard stats
+function getCount($conn, $table, $col='id') {
+    $res = mysqli_query($conn,"SELECT COUNT(*) AS total FROM $table");
+    $row = mysqli_fetch_assoc($res);
+    return $row['total'];
 }
 
+function getTotal($conn, $status=null) {
+    $query = "SELECT COUNT(*) AS total FROM orders";
+    if($status) $query .= " WHERE payment_status='$status'";
+    $res = mysqli_query($conn, $query);
+    $row = mysqli_fetch_assoc($res);
+    return $row['total'] ?? 0;
+}
+
+// Prepare stock data for pie chart
+$stock_labels = [];
+$stock_data = [];
+
+$res = mysqli_query($conn, "SELECT name, stock FROM products");
+while($row = mysqli_fetch_assoc($res)) {
+    $stock_labels[] = $row['name'];
+    $stock_data[] = (int)$row['stock'];
+}
+
+
+// Prepare chart data (last 7 days)
+$chart_labels = [];
+$orders_data = [];
+$sales_data = [];
+
+for($i=6; $i>=0; $i--){
+    $date = date('Y-m-d', strtotime("-$i days"));
+    $chart_labels[] = $date;
+
+    $res = mysqli_query($conn,"SELECT COUNT(*) AS count FROM orders WHERE placed_on LIKE '$date%'");
+    $orders_data[] = mysqli_fetch_assoc($res)['count'];
+
+    $res2 = mysqli_query($conn,"SELECT SUM(total_price) AS total FROM orders WHERE placed_on LIKE '$date%' AND payment_status='completed'");
+    $sales_data[] = mysqli_fetch_assoc($res2)['total'] ?? 0;
+}
 ?>
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
-   <meta charset="UTF-8">
-   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-   <title>admin panel</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Panel</title>
 
-   <!-- font awesome cdn link  -->
-   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="css/admin_header.css">
+<link rel="stylesheet" href="css/admin_page.css">
 
-   <!-- custom admin css file link  -->
-   <link rel="stylesheet" href="css/admin_style.css">
-
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-   
+
 <?php include 'admin_header.php'; ?>
 
-<!-- admin dashboard section starts  -->
+<div class="main-content">
+    <section class="dashboard">
+        <h1 class="title">Dashboard</h1>
 
-<section class="dashboard">
+        <!-- Dashboard Boxes -->
+        <div class="box-container">
 
-   <h1 class="title">dashboard</h1>
+            <?php
+            $boxes = [
+                ['Pending', getTotal($conn,'pending'), 'fa-hourglass-half'],
+                ['Completed', getTotal($conn,'completed'), 'fa-check-circle'],
+                ['Total Orders', getCount($conn,'orders'), 'fa-shopping-cart'],
+                ['Total Products', getCount($conn,'products'), 'fa-box'],
+                ['Total Users', getCount($conn,'users'), 'fa-users'],
+                ['Messages', getCount($conn,'message'), 'fa-envelope'],
+            ];
 
-   <div class="box-container">
+            foreach($boxes as $box): ?>
+            <div class="box">
+                <div class="stat-left">
+                    <i class="fas <?= $box[2] ?> stat-icon"></i>
+                    <div>
+                        <p class="stat-title"><?= $box[0] ?></p>
+                        <p class="stat-value"><?= is_numeric($box[1]) && strpos($box[0],'Rs')===false ? $box[1] : 'Rs. '.$box[1].'/-'; ?></p>
+                    </div>
+                </div>
+            </div>
+            <?php endforeach; ?>
+        </div>
 
-      <div class="box">
-         <?php
-            $total_pendings = 0;
-            $select_pending = mysqli_query($conn, "SELECT total_price FROM `orders` WHERE payment_status = 'pending'") or die('query failed');
-            if(mysqli_num_rows($select_pending) > 0){
-               while($fetch_pendings = mysqli_fetch_assoc($select_pending)){
-                  $total_price = $fetch_pendings['total_price'];
-                  $total_pendings += $total_price;
-               };
-            };
-         ?>
-         <h3>Rs. <?php echo $total_pendings; ?>/-</h3>
-         <p>total pendings</p>
-      </div>
+        <!-- Charts -->
+        <div class="charts-container">
+           <div class="chart-box">
+                <h2>Book Stock</h2>
+                <canvas id="stockChart"></canvas>
+             </div>
+            <div class="chart-box">
+                <h2>Daily Orders</h2>
+                <canvas id="ordersChart"></canvas>
+            </div>
+        </div>
+    </section>
+</div>
 
-      <div class="box">
-         <?php
-            $total_completed = 0;
-            $select_completed = mysqli_query($conn, "SELECT total_price FROM `orders` WHERE payment_status = 'completed'") or die('query failed');
-            if(mysqli_num_rows($select_completed) > 0){
-               while($fetch_completed = mysqli_fetch_assoc($select_completed)){
-                  $total_price = $fetch_completed['total_price'];
-                  $total_completed += $total_price;
-               };
-            };
-         ?>
-         <h3>Rs. <?php echo $total_completed; ?>/-</h3>
-         <p>completed payments</p>
-      </div>
+<script>
+const chartLabels = <?= json_encode($chart_labels) ?>;
+const ordersData = <?= json_encode($orders_data) ?>;
+const salesData = <?= json_encode($sales_data) ?>;
 
-      <div class="box">
-         <?php 
-            $select_orders = mysqli_query($conn, "SELECT * FROM `orders`") or die('query failed');
-            $number_of_orders = mysqli_num_rows($select_orders);
-         ?>
-         <h3><?php echo $number_of_orders; ?></h3>
-         <p>order placed</p>
-      </div>
-
-      <div class="box">
-         <?php 
-            $select_products = mysqli_query($conn, "SELECT * FROM `products`") or die('query failed');
-            $number_of_products = mysqli_num_rows($select_products);
-         ?>
-         <h3><?php echo $number_of_products; ?></h3>
-         <p>products added</p>
-      </div>
-
-      <div class="box">
-         <?php 
-            $select_users = mysqli_query($conn, "SELECT * FROM `users` WHERE user_type = 'user'") or die('query failed');
-            $number_of_users = mysqli_num_rows($select_users);
-         ?>
-         <h3><?php echo $number_of_users; ?></h3>
-         <p>normal users</p>
-      </div>
-
-      <div class="box">
-         <?php 
-            $select_admins = mysqli_query($conn, "SELECT * FROM `users` WHERE user_type = 'admin'") or die('query failed');
-            $number_of_admins = mysqli_num_rows($select_admins);
-         ?>
-         <h3><?php echo $number_of_admins; ?></h3>
-         <p>admin users</p>
-      </div>
-
-      <div class="box">
-         <?php 
-            $select_account = mysqli_query($conn, "SELECT * FROM `users`") or die('query failed');
-            $number_of_account = mysqli_num_rows($select_account);
-         ?>
-         <h3><?php echo $number_of_account; ?></h3>
-         <p>total accounts</p>
-      </div>
-
-      <div class="box">
-         <?php 
-            $select_messages = mysqli_query($conn, "SELECT * FROM `message`") or die('query failed');
-            $number_of_messages = mysqli_num_rows($select_messages);
-         ?>
-         <h3><?php echo $number_of_messages; ?></h3>
-         <p>new messages</p>
-      </div>
-
-   </div>
-
-</section>
-
-<!-- admin dashboard section ends -->
+// Orders Chart
+new Chart(document.getElementById('ordersChart').getContext('2d'), {
+    data: {
+        labels: chartLabels,
+        datasets: [
+            {
+                type: 'bar',
+                label: 'Orders',
+                data: ordersData,
+                backgroundColor: 'rgba(0, 240, 255, 0.6)',
+                borderColor: 'rgba(0, 240, 255, 1)',
+                borderWidth: 1
+            },
+            {
+                type: 'line',
+                label: 'Sales (Rs)',
+                data: salesData,
+                borderColor: 'rgba(168, 75, 255, 1)',
+                backgroundColor: 'rgba(168, 75, 255, 0.3)',
+                fill: true,
+                tension: 0.3,
+                yAxisID: 'y1'
+            }
+        ]
+    },
+    options: {
+        responsive: true,
+        scales: {
+            y: { beginAtZero: true, position: 'left', title: { display:true, text:'Orders' } },
+            y1: { beginAtZero: true, position: 'right', title: { display:true, text:'Sales (Rs)' } }
+        }
+    }
+});
 
 
+const stockLabels = <?= json_encode($stock_labels) ?>;
+const stockData = <?= json_encode($stock_data) ?>;
+
+new Chart(document.getElementById('stockChart').getContext('2d'), {
+    type: 'bar', // horizontal bar for stock
+    data: {
+        labels: stockLabels,
+        datasets: [{
+            label: 'Stock Quantity',
+            data: stockData,
+            backgroundColor: stockLabels.map(() => `hsl(${Math.random() * 360}, 70%, 60%)`),
+            borderWidth: 1
+        }]
+    },
+    options: {
+        indexAxis: 'y', // makes it horizontal
+        responsive: true,
+        scales: {
+            x: { beginAtZero: true }
+        },
+        plugins: {
+            legend: { display: false },
+            tooltip: {
+                callbacks: {
+                    label: function(context) {
+                        return context.raw + ' units';
+                    }
+                }
+            }
+        }
+    }
+});
 
 
-
-
-
-
-
-<!-- custom admin js file link  -->
-<script src="js/admin_script.js"></script>
+</script>
 
 </body>
 </html>

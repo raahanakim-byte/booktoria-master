@@ -84,7 +84,21 @@ function parseTotalProductsString($str) {
     return $names;
 }
 
-function getRecommendedBooks($conn, $user_id, $limit = 6) {
+function getRecommendedBooks($conn, $user_id = null, $limit = 6) {
+    // Guest mode (no user_id)
+    if (!$user_id) {
+        $query = "
+            (SELECT id, name AS title, author, genre, price, image, location, 'new' AS source
+             FROM products ORDER BY id DESC LIMIT 3)
+            UNION
+            (SELECT id, title, author, genre, price, image, location, 'thrift' AS source
+             FROM thrift_products ORDER BY posted_on DESC LIMIT 3)
+        ";
+        $res = mysqli_query($conn, $query) or die('recommendation query failed');
+        return mysqli_fetch_all($res, MYSQLI_ASSOC);
+    }
+
+    // --- Personalized mode below (your existing logic) ---
     $features = getAllDistinctFeatureValues($conn);
     $feature_indices = [
         'authors' => $features['authors'],
@@ -100,7 +114,6 @@ function getRecommendedBooks($conn, $user_id, $limit = 6) {
         $book_names = parseTotalProductsString($order['total_products']);
         foreach ($book_names as $name) {
             $purchased_book_names[] = $name;
-            // Fuzzy match to avoid missing books with similar names
             $book_res = mysqli_query($conn, "SELECT * FROM products WHERE name LIKE '%" . mysqli_real_escape_string($conn, $name) . "%' LIMIT 1");
             if ($book_data = mysqli_fetch_assoc($book_res)) {
                 $vec = bookToVector($book_data, $feature_indices);
@@ -109,7 +122,6 @@ function getRecommendedBooks($conn, $user_id, $limit = 6) {
         }
     }
 
-    // If no purchase history, create a neutral profile (equal preference)
     if (empty($user_profile)) {
         $user_profile = array_fill(0, count($features['authors']) + count($features['genres']) + count($features['locations']), 1);
     }
@@ -123,10 +135,7 @@ function getRecommendedBooks($conn, $user_id, $limit = 6) {
         $scores[] = ['book' => $book, 'score' => $sim];
     }
 
-    // Sort by similarity (highest first)
-    usort($scores, function($a, $b) {
-        return $b['score'] <=> $a['score'];
-    });
+    usort($scores, fn($a, $b) => $b['score'] <=> $a['score']);
 
     $recommended = [];
     foreach ($scores as $entry) {
@@ -136,3 +145,4 @@ function getRecommendedBooks($conn, $user_id, $limit = 6) {
 
     return $recommended;
 }
+?>

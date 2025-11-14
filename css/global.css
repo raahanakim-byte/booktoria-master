@@ -1,0 +1,130 @@
+/* Header */
+.site-header {
+    background-color: #fff;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    position: sticky;
+    top: 0;
+    z-index: 999;
+}
+
+.top-bar {
+    background: #ff6b6b;
+    color: #fff;
+    font-size: 0.9rem;
+    padding: 5px 0;
+}
+
+.top-bar .container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.top-bar a {
+    color: #fff;
+    margin-left: 10px;
+    transition: 0.3s;
+}
+
+.top-bar a:hover {
+    color: #000;
+}
+
+.main-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 0;
+}
+
+.logo {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #ff6b6b;
+    text-decoration: none;
+}
+
+.navbar a {
+    margin-left: 20px;
+    color: #333;
+    text-decoration: none;
+    font-weight: 500;
+    transition: 0.3s;
+}
+
+.navbar a:hover {
+    color: #ff6b6b;
+}
+
+.header-icons a, .header-icons div {
+    margin-left: 15px;
+    font-size: 1.2rem;
+    cursor: pointer;
+}
+
+.header-icons span {
+    font-size: 0.9rem;
+    margin-left: 3px;
+}
+
+/* Footer */
+.site-footer {
+    background: #222;
+    color: #fff;
+    padding: 50px 20px 20px;
+}
+
+.footer-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 40px;
+    justify-content: space-between;
+}
+
+.footer-column h3 {
+    font-size: 1.2rem;
+    margin-bottom: 15px;
+}
+
+.footer-column ul {
+    list-style: none;
+}
+
+.footer-column ul li {
+    margin-bottom: 10px;
+}
+
+.footer-column ul li a {
+    color: #ccc;
+    text-decoration: none;
+    transition: 0.3s;
+}
+
+.footer-column ul li a:hover {
+    color: #ff6b6b;
+}
+
+.footer-bottom {
+    text-align: center;
+    margin-top: 30px;
+    font-size: 0.9rem;
+    border-top: 1px solid #444;
+    padding-top: 15px;
+}
+
+/* Mobile Menu */
+@media(max-width:768px){
+    .navbar {
+        display: none;
+        flex-direction: column;
+        background: #fff;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        width: 100%;
+        padding: 20px 0;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .navbar.active { display: flex; }
+    #menu-toggle { display: block; cursor: pointer; }
+}

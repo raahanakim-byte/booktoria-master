@@ -74,6 +74,8 @@ if(isset($_POST['place_order'])){
    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
    <link rel="stylesheet" href="css/home.css">
    <link rel="stylesheet" href="css/checkout.css">
+   <link rel="stylesheet" href="css/sidebar.css">
+
 </head>
 <body>
    <!-- Display Messages -->
@@ -90,36 +92,7 @@ if(isset($_POST['place_order'])){
    }
    ?>
 
-   <!-- Header -->
-   <header>
-      <div class="container header-content">
-         <a href="home.php" class="logo">
-            <i class="fas fa-book-open"></i>
-            <span>BookNook</span>
-         </a>
-         
-         <nav id="main-nav">
-            <ul>
-               <li><a href="home.php">Home</a></li>
-               <li><a href="shop.php">Shop</a></li>
-               <li><a href="orders.php">Orders</a></li>
-               <li><a href="thrift_list.php">Thrift Books</a></li>
-               <li><a href="contact.php">Contact</a></li>
-            </ul>
-         </nav>
-         
-         <div class="header-actions">
-            <i class="fas fa-search" id="search-btn"></i>
-            <a href="cart.php" class="cart-icon">
-               <i class="fas fa-shopping-cart" id="cart-btn"></i>
-            </a>
-            <i class="fas fa-user" id="user-btn"></i>
-            <div class="mobile-menu-btn" id="menu-btn">
-               <i class="fas fa-bars"></i>
-            </div>
-         </div>
-      </div>
-   </header>
+   <?php include 'header.php'?>
 
    <!-- Breadcrumb Section -->
    <section class="breadcrumb">

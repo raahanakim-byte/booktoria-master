@@ -1,356 +1,144 @@
 <?php
-include 'config.php';
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 
 session_start();
+include 'config.php';
+include 'recommendations.php';
 
-$user_id = $_SESSION['user_id'];
+$user_id = $_SESSION['user_id'] ?? null;
+$message = [];
 
-if(!isset($user_id)){
-   header('location:login.php');
+// --- Handle add to cart ---
+if(isset($_POST['add_to_cart'])){
+    $product_id = $_POST['product_id'];
+    $product_name = $_POST['product_name'];
+    $product_price = $_POST['product_price'];
+    $product_image = $_POST['product_image'];
+    $product_quantity = (int)$_POST['product_quantity'];
+
+    if($user_id){
+        $check = mysqli_query($conn, "SELECT * FROM cart WHERE user_id='$user_id' AND name='$product_name'");
+        if(mysqli_num_rows($check) > 0){
+            $message[] = 'Already in cart!';
+        } else {
+            mysqli_query($conn, "INSERT INTO cart(user_id, name, price, quantity, image) VALUES('$user_id','$product_name','$product_price','$product_quantity','$product_image')");
+            $message[] = 'Added to cart!';
+        }
+    } else {
+        if(!isset($_SESSION['guest_cart'])) $_SESSION['guest_cart'] = [];
+        if(isset($_SESSION['guest_cart'][$product_id])){
+            $message[] = 'Already in cart!';
+        } else {
+            $_SESSION['guest_cart'][$product_id] = [
+                'id' => $product_id,
+                'name' => $product_name,
+                'price' => $product_price,
+                'image' => $product_image,
+                'quantity' => $product_quantity,
+                'type' => 'normal'
+            ];
+            $message[] = 'Added to cart (guest mode)!';
+        }
+    }
 }
 
-if(isset($_POST['update_cart'])){
-   $cart_id = $_POST['cart_id'];
-   $cart_quantity = $_POST['cart_quantity'];
-   mysqli_query($conn, "UPDATE `cart` SET quantity = '$cart_quantity' WHERE id = '$cart_id'") or die('query failed');
-   $message[] = 'cart quantity updated!';
-}
-
+// --- Handle remove single item ---
 if(isset($_GET['delete'])){
-   $delete_id = $_GET['delete'];
-   mysqli_query($conn, "DELETE FROM `cart` WHERE id = '$delete_id'") or die('query failed');
-   header('location:cart.php');
+    $id = $_GET['delete'];
+    if($user_id){
+        mysqli_query($conn,"DELETE FROM cart WHERE id='$id'");
+    } else {
+        unset($_SESSION['guest_cart'][$id]);
+    }
+    header('Location: cart.php');
+    exit;
 }
 
+// --- Handle clear cart ---
 if(isset($_GET['delete_all'])){
-   mysqli_query($conn, "DELETE FROM `cart` WHERE user_id = '$user_id'") or die('query failed');
-   header('location:cart.php');
+    if($user_id){
+        mysqli_query($conn,"DELETE FROM cart WHERE user_id='$user_id'");
+    } else {
+        $_SESSION['guest_cart'] = [];
+    }
+    header('Location: cart.php');
+    exit;
 }
 
-?>
+// --- Fetch cart items ---
+$cart_items = [];
+$grand_total = 0;
 
+if($user_id){
+    $result = mysqli_query($conn,"SELECT * FROM cart WHERE user_id='$user_id'");
+    while($row = mysqli_fetch_assoc($result)){
+        $row['sub_total'] = $row['price'] * $row['quantity'];
+        $grand_total += $row['sub_total'];
+        $cart_items[] = $row;
+    }
+} else {
+    if(isset($_SESSION['guest_cart'])){
+        foreach($_SESSION['guest_cart'] as $id => $item){
+            $item['sub_total'] = $item['price'] * $item['quantity'];
+            $grand_total += $item['sub_total'];
+            $item['id'] = $id;
+            $cart_items[] = $item;
+        }
+    }
+}
+
+$cart_count = count($cart_items);
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
-   <meta charset="UTF-8">
-   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-   <title>BookNook - Shopping Cart</title>
-   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-   <link rel="stylesheet" href="css/home.css">
-   <link rel="stylesheet" href="css/cart.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Booktoria - Cart</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="css/home.css">
+<link rel="stylesheet" href="css/sidebar.css">
+<link rel="stylesheet" href="css/cart.css">
 </head>
 <body>
-   <!-- Display Messages -->
-   <?php
-   if(isset($message)){
-      foreach($message as $message){
-         echo '
-         <div class="message">
-            <span>'.$message.'</span>
-            <i class="fas fa-times" onclick="this.parentElement.remove();"></i>
-         </div>
-         ';
-      }
-   }
-   ?>
+<?php include 'header.php'; ?>
 
-   <!-- Header -->
-   <header>
-      <div class="container header-content">
-         <a href="home.php" class="logo">
-            <i class="fas fa-book-open"></i>
-            <span>BookNook</span>
-         </a>
-         
-         <nav id="main-nav">
-            <ul>
-               <li><a href="home.php">Home</a></li>
-               <li><a href="shop.php">Shop</a></li>
-               <li><a href="orders.php">Orders</a></li>
-               <li><a href="thrift_list.php">Thrift Books</a></li>
-               <li><a href="contact.php">Contact</a></li>
-            </ul>
-         </nav>
-         
-         <div class="header-actions">
-            <i class="fas fa-search" id="search-btn"></i>
-            <a href="cart.php" class="cart-icon active">
-               <i class="fas fa-shopping-cart" id="cart-btn"></i>
-               <span class="cart-count">
-                  <?php 
-                  $cart_count = mysqli_query($conn, "SELECT COUNT(*) as count FROM `cart` WHERE user_id = '$user_id'") or die('query failed');
-                  $cart_data = mysqli_fetch_assoc($cart_count);
-                  echo $cart_data['count'];
-                  ?>
-               </span>
-            </a>
-            <i class="fas fa-user" id="user-btn"></i>
-            <div class="mobile-menu-btn" id="menu-btn">
-               <i class="fas fa-bars"></i>
+<div class="main-content">
+    <h1>Shopping Cart</h1>
+
+    <!-- Messages -->
+    <?php foreach($message as $msg): ?>
+        <div class="message">
+            <span><?= htmlspecialchars($msg) ?></span>
+            <i class="fas fa-times" onclick="this.parentElement.remove()"></i>
+        </div>
+    <?php endforeach; ?>
+
+    <?php if($cart_count > 0): ?>
+        <div class="cart-items">
+            <?php foreach($cart_items as $item): ?>
+            <div class="cart-item">
+                <img src="uploaded_img/<?= htmlspecialchars($item['image']) ?>" alt="<?= htmlspecialchars($item['name']) ?>" class="cart-img">
+                <div class="cart-details">
+                    <h3><?= htmlspecialchars($item['name']) ?></h3>
+                    <p>Price: Rs. <?= number_format($item['price']) ?>/-</p>
+                    <p>Quantity: <?= $item['quantity'] ?></p>
+                    <p>Subtotal: Rs. <?= number_format($item['sub_total']) ?>/-</p>
+                    <a href="cart.php?delete=<?= $item['id'] ?>" class="btn btn-danger">Remove</a>
+                </div>
             </div>
-         </div>
-      </div>
-   </header>
+            <?php endforeach; ?>
+        </div>
 
-   <!-- Breadcrumb Section -->
-   <section class="breadcrumb">
-      <div class="container">
-         <div class="breadcrumb-content">
-            <h1>Shopping Cart</h1>
-            <div class="breadcrumb-nav">
-               <a href="home.php">
-                  <i class="fas fa-home"></i> Home
-               </a>
-               <span class="breadcrumb-separator"><i class="fas fa-chevron-right"></i></span>
-               <span class="breadcrumb-current">Cart</span>
-            </div>
-            <div class="breadcrumb-stats">
-               <div class="breadcrumb-stat">
-                  <i class="fas fa-shopping-cart"></i>
-                  <span>
-                     <?php 
-                     $cart_count = mysqli_query($conn, "SELECT COUNT(*) as count FROM `cart` WHERE user_id = '$user_id'") or die('query failed');
-                     $cart_data = mysqli_fetch_assoc($cart_count);
-                     echo $cart_data['count'] . ' Items';
-                     ?>
-                  </span>
-               </div>
-            </div>
-         </div>
-      </div>
-   </section>
-
-   <!-- Cart Section -->
-   <section class="cart-section">
-      <div class="container">
-         <div class="cart-header">
-            <h2 class="section-title">Your Cart Items</h2>
-            <?php
-            $select_cart = mysqli_query($conn, "SELECT * FROM `cart` WHERE user_id = '$user_id'") or die('query failed');
-            if(mysqli_num_rows($select_cart) > 0){
-            ?>
-            <a href="cart.php?delete_all" class="clear-cart-btn" onclick="return confirm('Are you sure you want to clear your entire cart?');">
-               <i class="fas fa-trash-alt"></i>
-               Clear Cart
-            </a>
-            <?php } ?>
-         </div>
-
-         <div class="cart-content">
-            <!-- Cart Items -->
-            <div class="cart-items">
-               <?php
-               $grand_total = 0;
-               $select_cart = mysqli_query($conn, "SELECT * FROM `cart` WHERE user_id = '$user_id'") or die('query failed');
-               if(mysqli_num_rows($select_cart) > 0){
-                  while($fetch_cart = mysqli_fetch_assoc($select_cart)){   
-                     $sub_total = $fetch_cart['quantity'] * $fetch_cart['price'];
-                     $grand_total += $sub_total;
-               ?>
-               <div class="cart-item">
-                  <div class="item-image">
-                     <img src="uploaded_img/<?php echo $fetch_cart['image']; ?>" alt="<?php echo $fetch_cart['name']; ?>">
-                     <?php if($fetch_cart['type'] == 'thrift'){ ?>
-                        <div class="item-badge thrift-badge">
-                           <i class="fas fa-recycle"></i>
-                           Thrift
-                        </div>
-                     <?php } ?>
-                  </div>
-                  
-                  <div class="item-details">
-                     <h3 class="item-title"><?php echo $fetch_cart['name']; ?></h3>
-                     <p class="item-price">Rs. <?php echo $fetch_cart['price']; ?>/-</p>
-                     
-                     <form action="" method="post" class="quantity-form">
-                        <input type="hidden" name="cart_id" value="<?php echo $fetch_cart['id']; ?>">
-                        <div class="quantity-controls">
-                           <label>Quantity:</label>
-                           <div class="quantity-input-group">
-                              <button type="button" class="quantity-btn minus" onclick="decreaseQuantity(this)">
-                                 <i class="fas fa-minus"></i>
-                              </button>
-                              <input type="number" min="1" name="cart_quantity" value="<?php echo $fetch_cart['quantity']; ?>" class="quantity-input">
-                              <button type="button" class="quantity-btn plus" onclick="increaseQuantity(this)">
-                                 <i class="fas fa-plus"></i>
-                              </button>
-                           </div>
-                           <button type="submit" name="update_cart" class="update-btn">
-                              <i class="fas fa-sync-alt"></i>
-                              Update
-                           </button>
-                        </div>
-                     </form>
-                     
-                     <div class="item-subtotal">
-                        Subtotal: <span>Rs. <?php echo $sub_total; ?>/-</span>
-                     </div>
-                  </div>
-                  
-                  <div class="item-actions">
-                     <a href="cart.php?delete=<?php echo $fetch_cart['id']; ?>" class="delete-item" onclick="return confirm('Remove this item from cart?');">
-                        <i class="fas fa-trash"></i>
-                     </a>
-                  </div>
-               </div>
-               <?php
-                  }
-               } else {
-                  echo '
-                  <div class="empty-cart">
-                     <div class="empty-icon">
-                        <i class="fas fa-shopping-cart"></i>
-                     </div>
-                     <h3>Your Cart is Empty</h3>
-                     <p>Looks like you haven\'t added any books to your cart yet.</p>
-                     <a href="shop.php" class="btn">Start Shopping</a>
-                  </div>
-                  ';
-               }
-               ?>
-            </div>
-
-               <div class="cart-actions">
-                  <a href="shop.php" class="btn btn-secondary">Continue Shopping</a>
-                  <?php if($grand_total > 0): ?>
-                     <a href="checkout.php" class="btn btn-primary">Proceed to Checkout</a>
-                  <?php endif; ?>
-               </div>
-
-            <!-- Cart Summary -->
-            <?php if(mysqli_num_rows($select_cart) > 0){ ?>
-           <!-- Cart Summary Section -->
-<div class="cart-summary">
-    <div class="total-section">
-        <h3>Cart Total: Rs. <?php echo $grand_total; ?>/-</h3>
-        <p>Shipping calculated at checkout</p>
-    </div>
-    
-    <div class="cart-actions">
-        <a href="shop.php" class="btn btn-secondary">
-            <i class="fas fa-arrow-left"></i> Continue Shopping
-        </a>
-        <?php if($grand_total > 0): ?>
-            <a href="checkout.php" class="btn btn-primary">
-                <i class="fas fa-credit-card"></i> Proceed to Checkout
-            </a>
-        <?php endif; ?>
-    </div>
+        <div class="cart-summary">
+            <h2>Total: Rs. <?= number_format($grand_total) ?>/-</h2>
+            <a href="cart.php?delete_all" class="btn btn-warning">Clear Cart</a>
+            <a href="checkout.php" class="btn btn-primary">Proceed to Checkout</a>
+        </div>
+    <?php else: ?>
+        <p>Your cart is empty. <a href="shop.php">Start shopping</a>.</p>
+    <?php endif; ?>
 </div>
-            <?php } ?>
-         </div>
-      </div>
-   </section>
-
-   <!-- Newsletter -->
-   <section class="newsletter">
-      <div class="container">
-         <h2>Stay Updated</h2>
-         <p>Subscribe to our newsletter for exclusive deals and new arrivals.</p>
-         <form class="newsletter-form">
-            <input type="email" placeholder="Your email address" class="newsletter-input" required>
-            <button type="submit" class="btn btn-secondary">Subscribe</button>
-         </form>
-      </div>
-   </section>
-
-   <!-- Footer -->
-   <footer>
-      <div class="container">
-         <div class="footer-content">
-            <div class="footer-column">
-               <h3>BookNook</h3>
-               <p>Your favorite online bookstore with carefully curated selections for every type of reader.</p>
-              
-            </div>
-            
-            <div class="footer-column">
-               <h3>Shop</h3>
-               <ul class="footer-links">
-                  <li><a href="shop.php">All Books</a></li>
-                  <li><a href="shop.php?genre=Fiction">Fiction</a></li>
-                  <li><a href="shop.php?genre=Non-Fiction">Non-Fiction</a></li>
-                  <li><a href="thrift_list.php">Thrift Books</a></li>
-                  <li><a href="shop.php">New Arrivals</a></li>
-               </ul>
-            </div>
-            
-            <div class="footer-column">
-               <h3>Help</h3>
-               <ul class="footer-links">
-                  <li><a href="#">Shipping Info</a></li>
-                  <li><a href="#">Returns</a></li>
-                  <li><a href="#">FAQ</a></li>
-                  <li><a href="contact.php">Contact Us</a></li>
-                  <li><a href="#">Privacy Policy</a></li>
-               </ul>
-            </div>
-            
-            <div class="footer-column">
-               <h3>Contact</h3>
-               <ul class="footer-links">
-                  <li><i class="fas fa-map-marker-alt"></i> 123 Book Street, Readville</li>
-                  <li><i class="fas fa-phone"></i> (555) 123-4567</li>
-                  <li><i class="fas fa-envelope"></i> hello@booknook.com</li>
-               </ul>
-            </div>
-         </div>
-         
-         <div class="footer-bottom">
-            <p>&copy; 2023 BookNook. All rights reserved.</p>
-         </div>
-      </div>
-   </footer>
-
-   <script>
-      // Mobile menu toggle
-      document.getElementById('menu-btn').addEventListener('click', function() {
-         document.getElementById('main-nav').classList.toggle('active');
-      });
-
-      // Close mobile menu when clicking outside
-      document.addEventListener('click', function(event) {
-         const nav = document.getElementById('main-nav');
-         const menuBtn = document.getElementById('menu-btn');
-         
-         if (!nav.contains(event.target) && !menuBtn.contains(event.target)) {
-            nav.classList.remove('active');
-         }
-      });
-
-      // Message auto-remove
-      const messages = document.querySelectorAll('.message');
-      messages.forEach(message => {
-         setTimeout(() => {
-            message.style.opacity = '0';
-            setTimeout(() => {
-               message.remove();
-            }, 300);
-         }, 5000);
-      });
-
-      // Quantity controls
-      function increaseQuantity(button) {
-         const input = button.parentElement.querySelector('.quantity-input');
-         input.value = parseInt(input.value) + 1;
-      }
-
-      function decreaseQuantity(button) {
-         const input = button.parentElement.querySelector('.quantity-input');
-         if (parseInt(input.value) > 1) {
-            input.value = parseInt(input.value) - 1;
-         }
-      }
-
-      // Update button animation
-      document.querySelectorAll('.update-btn').forEach(btn => {
-         btn.addEventListener('click', function() {
-            this.classList.add('updating');
-            setTimeout(() => {
-               this.classList.remove('updating');
-            }, 1000);
-         });
-      });
-   </script>
 </body>
 </html>

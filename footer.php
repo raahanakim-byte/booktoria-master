@@ -1,41 +1,34 @@
-<section class="footer">
 
-   <div class="box-container">
+<footer class="site-footer">
+    <div class="container footer-grid">
+        <div class="footer-column">
+            <h3>Booktoria</h3>
+            <p>Your favorite online bookstore with curated selections for every reader.</p>
+        </div>
 
-      <div class="box">
-         <h3>quick links</h3>
-         <a href="home.php">home</a>
-         <a href="about.php">about</a>
-         <a href="shop.php">shop</a>
-         <a href="contact.php">contact</a>
-      </div>
+        <div class="footer-column">
+            <h3>Shop</h3>
+            <ul>
+                <li><a href="shop.php">All Books</a></li>
+                <li><a href="shop.php?genre=Fiction">Fiction</a></li>
+                <li><a href="shop.php?genre=Non-Fiction">Non-Fiction</a></li>
+                <li><a href="thrift_list.php">Thrift Books</a></li>
+            </ul>
+        </div>
 
-      <div class="box">
-         <h3>extra links</h3>
-         <a href="login.php">login</a>
-         <a href="register.php">register</a>
-         <a href="cart.php">cart</a>
-         <a href="orders.php">orders</a>
-      </div>
+        <div class="footer-column">
+            <h3>Help</h3>
+            <ul>
+                <li><a href="#">Shipping Info</a></li>
+                <li><a href="#">Returns</a></li>
+                <li><a href="#">FAQ</a></li>
+                <li><a href="contact.php">Contact Us</a></li>
+                <li><a href="#">Privacy Policy</a></li>
+            </ul>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        <p>&copy; <?php echo date('Y'); ?> Booktoria. All rights reserved.</p>
+    </div>
+</footer>
 
-      <div class="box">
-         <h3>contact info</h3>
-         <p> <i class="fas fa-phone"></i> 9808111222 </p>
-         <p> <i class="fas fa-phone"></i> 9841233555 </p>
-         <p> <i class="fas fa-envelope"></i> Booktoria@gmail.com </p>
-         <p> <i class="fas fa-map-marker-alt"></i> Kathmandu, Nepal </p>
-      </div>
-
-      <div class="box">
-         <h3>follow us</h3>
-         <a href="#"> <i class="fab fa-facebook-f"></i> facebook </a>
-         <a href="#"> <i class="fab fa-twitter"></i> twitter </a>
-         <a href="#"> <i class="fab fa-instagram"></i> instagram </a>
-         
-      </div>
-
-   </div>
-
-   
-
-</section>
