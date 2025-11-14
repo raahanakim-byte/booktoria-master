@@ -333,7 +333,7 @@
                if(mysqli_num_rows($select_products) > 0){
                   while($fetch_products = mysqli_fetch_assoc($select_products)){
                ?>
-               <form action="orders.php" method="post" class="product-card">
+               <form class="product-card add-to-cart-form">
                   <img src="uploaded_img/<?php echo htmlspecialchars($fetch_products['image']); ?>" alt="<?php echo htmlspecialchars($fetch_products['name']); ?>" class="product-image">
                   <div class="product-info">
                      <h3 class="product-title"><?php echo htmlspecialchars($fetch_products['name']); ?></h3>
@@ -356,13 +356,14 @@
                               $totalBooks = $row['total_books'];
                               echo $totalBooks;
                               ?>
+                              
                               </span>
                         </div>
                         </div>
                         <input type="hidden" name="product_name" value="<?php echo htmlspecialchars($fetch_products['name']); ?>">
                         <input type="hidden" name="product_price" value="<?php echo htmlspecialchars($fetch_products['price']); ?>">
                         <input type="hidden" name="product_image" value="<?php echo htmlspecialchars($fetch_products['image']); ?>">
-                        <input type="submit" value="Add to Cart" name="add_to_cart" class="btn">
+                       <input type="submit" value="Add to Cart" name="add_to_cart" class="btn add-to-cart-btn">
                      </div>
                   </div>
                </form>
@@ -481,6 +482,36 @@
       </footer>
 
       <script>
+
+         document.addEventListener('DOMContentLoaded', () => {
+  const forms = document.querySelectorAll('.add-to-cart-form');
+
+  forms.forEach(form => {
+    const button = form.querySelector('.add-to-cart-btn');
+    button.addEventListener('click', () => {
+      const formData = new FormData();
+      formData.append('name', form.querySelector('[name="product_name"]').value);
+      formData.append('price', form.querySelector('[name="product_price"]').value);
+      formData.append('image', form.querySelector('[name="product_image"]').value);
+      formData.append('quantity', form.querySelector('[name="product_quantity"]').value);
+
+      fetch('add_to_cart.php', {
+        method: 'POST',
+        body: formData
+      })
+      .then(res => res.json())
+      .then(data => {
+        const messageBox = document.createElement('div');
+        messageBox.className = 'message ' + (data.status === 'success' ? 'success' : 'error');
+        messageBox.innerHTML = `<span>${data.message}</span><i class="fas fa-times" onclick="this.parentElement.remove();"></i>`;
+        document.body.appendChild(messageBox);
+        setTimeout(() => messageBox.remove(), 4000);
+      })
+      .catch(err => console.error('AJAX error:', err));
+    });
+  });
+});
+
          // Mobile menu toggle
          document.getElementById('menu-btn').addEventListener('click', function() {
             document.getElementById('main-nav').classList.toggle('active');

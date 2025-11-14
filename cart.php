@@ -219,24 +219,59 @@ if(isset($_GET['delete_all'])){
 
             <!-- Cart Summary -->
             <?php if(mysqli_num_rows($select_cart) > 0){ ?>
-           <!-- Cart Summary Section -->
-<div class="cart-summary">
-    <div class="total-section">
-        <h3>Cart Total: Rs. <?php echo $grand_total; ?>/-</h3>
-        <p>Shipping calculated at checkout</p>
-    </div>
-    
-    <div class="cart-actions">
-        <a href="shop.php" class="btn btn-secondary">
-            <i class="fas fa-arrow-left"></i> Continue Shopping
-        </a>
-        <?php if($grand_total > 0): ?>
-            <a href="checkout.php" class="btn btn-primary">
-                <i class="fas fa-credit-card"></i> Proceed to Checkout
-            </a>
-        <?php endif; ?>
-    </div>
-</div>
+            <div class="cart-summary">
+               <div class="summary-card">
+                  <h3 class="summary-title">Order Summary</h3>
+                  
+                  <div class="summary-row">
+                     <span>Subtotal</span>
+                     <span>Rs. <?php echo $grand_total; ?>/-</span>
+                  </div>
+                  
+                  <div class="summary-row">
+                     <span>Shipping</span>
+                     <span class="free-shipping">Free</span>
+                  </div>
+                  
+                  <div class="summary-row">
+                     <span>Tax</span>
+                     <span>Rs. 0/-</span>
+                  </div>
+                  
+                  <div class="summary-divider"></div>
+                  
+                  <div class="summary-row total">
+                     <span>Total Amount</span>
+                     <span class="total-amount">Rs. <?php echo $grand_total; ?>/-</span>
+                  </div>
+                  
+                  <div class="summary-actions">
+                     <a href="shop.php" class="btn btn-outline">
+                        <i class="fas fa-arrow-left"></i>
+                        Continue Shopping
+                     </a>
+                     <a href="checkout.php" class="btn <?php echo ($grand_total > 1)?'':'disabled'; ?>">
+                        <i class="fas fa-credit-card"></i>
+                        Proceed to Checkout
+                     </a>
+                  </div>
+                  
+                  <div class="security-notice">
+                     <i class="fas fa-shield-alt"></i>
+                     <span>Secure checkout guaranteed</span>
+                  </div>
+               </div>
+               
+               <div class="benefits-card">
+                  <h4>Benefits of Shopping with Us</h4>
+                  <ul class="benefits-list">
+                     <li><i class="fas fa-shipping-fast"></i> Free shipping on orders over Rs. 1000</li>
+                     <li><i class="fas fa-undo-alt"></i> Easy 30-day return policy</li>
+                     <li><i class="fas fa-lock"></i> Secure payment processing</li>
+                     <li><i class="fas fa-headset"></i> 24/7 customer support</li>
+                  </ul>
+               </div>
+            </div>
             <?php } ?>
          </div>
       </div>

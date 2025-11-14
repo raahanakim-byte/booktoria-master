@@ -1,0 +1,308 @@
+/* Reset and Base Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+/* Message Styles - Matching home.php */
+.message {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: #fff;
+    padding: 15px 25px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    z-index: 1000;
+    animation: slideIn 0.3s ease;
+    border-left: 4px solid #e74c3c;
+    max-width: 400px;
+}
+
+.message.success {
+    border-left-color: #27ae60;
+}
+
+.message span {
+    color: #2c3e50;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.4;
+}
+
+.message i {
+    color: #7f8c8d;
+    cursor: pointer;
+    transition: color 0.3s ease;
+    font-size: 16px;
+}
+
+.message i:hover {
+    color: #e74c3c;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* Form Container - Matching home.php styling */
+.form-container {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 40px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 450px;
+    border: 1px solid #e8ecef;
+}
+
+.form-container h3 {
+    text-align: center;
+    color: #2c3e50;
+    font-size: 2rem;
+    margin-bottom: 30px;
+    font-weight: 700;
+    position: relative;
+}
+
+.form-container h3::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 3px;
+    background: linear-gradient(135deg, #3498db 0%, #2c3e50 100%);
+    border-radius: 2px;
+}
+
+/* Form Styles */
+.form-container form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* Input Box Styles - Matching home.php inputs */
+.box {
+    padding: 15px 20px;
+    border: 2px solid #e8ecef;
+    border-radius: 8px;
+    font-size: 16px;
+    background: #f8f9fa;
+    transition: all 0.3s ease;
+    color: #2c3e50;
+    outline: none;
+    width: 100%;
+}
+
+.box::placeholder {
+    color: #95a5a6;
+    font-weight: 400;
+}
+
+.box:focus {
+    border-color: #3498db;
+    background: #ffffff;
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+    transform: translateY(-1px);
+}
+
+/* Button Styles - Matching home.php buttons */
+.btn {
+    background: linear-gradient(135deg, #3498db 0%, #2c3e50 100%);
+    color: white;
+    padding: 15px 30px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-top: 10px;
+    width: 100%;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(52, 152, 219, 0.3);
+}
+
+.btn:active {
+    transform: translateY(0);
+}
+
+/* Link Styles - Matching home.php links */
+.form-container p {
+    text-align: center;
+    color: #7f8c8d;
+    margin-top: 25px;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.form-container p a {
+    color: #3498db;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.form-container p a::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: #3498db;
+    transition: width 0.3s ease;
+}
+
+.form-container p a:hover {
+    color: #2980b9;
+}
+
+.form-container p a:hover::after {
+    width: 100%;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    body {
+        padding: 15px;
+    }
+    
+    .form-container {
+        padding: 30px 25px;
+        margin: 10px;
+    }
+    
+    .form-container h3 {
+        font-size: 1.75rem;
+        margin-bottom: 25px;
+    }
+    
+    .box {
+        padding: 14px 18px;
+        font-size: 15px;
+    }
+    
+    .btn {
+        padding: 14px 25px;
+        font-size: 15px;
+    }
+    
+    .message {
+        right: 15px;
+        left: 15px;
+        top: 15px;
+        max-width: none;
+    }
+}
+
+@media (max-width: 480px) {
+    .form-container {
+        padding: 25px 20px;
+    }
+    
+    .form-container h3 {
+        font-size: 1.5rem;
+    }
+    
+    .box {
+        padding: 12px 16px;
+        font-size: 14px;
+    }
+    
+    .btn {
+        padding: 12px 20px;
+        font-size: 14px;
+    }
+}
+
+/* Loading State */
+.btn.loading {
+    position: relative;
+    color: transparent;
+    pointer-events: none;
+}
+
+.btn.loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 20px;
+    height: 20px;
+    border: 2px solid transparent;
+    border-top: 2px solid #ffffff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: translate(-50%, -50%) rotate(0deg); }
+    100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+/* Additional Utility Classes */
+.text-center {
+    text-align: center;
+}
+
+.mt-20 {
+    margin-top: 20px;
+}
+
+.mb-20 {
+    margin-bottom: 20px;
+}
+
+/* Focus states for accessibility */
+.box:focus-visible {
+    outline: 2px solid #3498db;
+    outline-offset: 2px;
+}
+
+.btn:focus-visible {
+    outline: 2px solid #2c3e50;
+    outline-offset: 2px;
+}
+
+/* Error state for inputs */
+.box.error {
+    border-color: #e74c3c;
+    background: #fdf2f2;
+}
+
+.box.success {
+    border-color: #27ae60;
+    background: #f2fdf2;
+}
