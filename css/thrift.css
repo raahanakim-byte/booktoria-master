@@ -1,12 +1,49 @@
-/* Thrift Books Section */
+/* Thrift Books Page Specific Styles */
+:root {
+    --primary: #8B5FBF;
+    --primary-dark: #6D3FA0;
+    --secondary: #FF7E5F;
+    --accent: #2EC4B6;
+    --eco-green: #27AE60;
+    --eco-light: #D5F4E6;
+    --eco-dark: #229954;
+    --light: #F8F9FA;
+    --dark: #2D3047;
+    --gray: #6C757D;
+    --light-gray: #E9ECEF;
+    --white: #FFFFFF;
+    --shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    --radius: 12px;
+    --transition: all 0.3s ease;
+}
+
+/* Thrift Section */
 .thrift-section {
-    padding: 6rem 0;
-    background: var(--light);
+    padding: 4rem 0;
+    background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
 }
 
 .section-header {
     text-align: center;
     margin-bottom: 4rem;
+}
+
+.section-title {
+    font-size: 3.2rem;
+    font-weight: 800;
+    color: var(--dark);
+    margin-bottom: 1rem;
+    position: relative;
+}
+
+.section-title::after {
+    content: '';
+    display: block;
+    width: 80px;
+    height: 4px;
+    background: linear-gradient(to right, var(--eco-green), var(--accent));
+    margin: 1.5rem auto;
+    border-radius: 2px;
 }
 
 .section-subtitle {
@@ -20,36 +57,33 @@
 /* Thrift Grid */
 .thrift-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
     gap: 3rem;
     margin-bottom: 6rem;
 }
 
-/* Thrift Card */
 .thrift-card {
     background: var(--white);
-    border-radius: 16px;
+    border-radius: 20px;
     overflow: hidden;
-    box-shadow: 
-        0 4px 20px rgba(0, 0, 0, 0.08),
-        0 1px 3px rgba(0, 0, 0, 0.04);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 6px 25px rgba(0, 0, 0, 0.08);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     border: 1px solid rgba(139, 95, 191, 0.1);
     position: relative;
+    display: flex;
+    flex-direction: column;
 }
 
 .thrift-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 
-        0 8px 30px rgba(0, 0, 0, 0.12),
-        0 4px 12px rgba(0, 0, 0, 0.06);
+    transform: translateY(-8px);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
 }
 
 .thrift-badge {
     position: absolute;
     top: 1.5rem;
     left: 1.5rem;
-    background: linear-gradient(135deg, var(--accent) 0%, #25a897 100%);
+    background: linear-gradient(135deg, var(--eco-green), var(--eco-dark));
     color: var(--white);
     padding: 0.6rem 1.2rem;
     border-radius: 20px;
@@ -59,12 +93,12 @@
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    box-shadow: 0 2px 8px rgba(46, 196, 182, 0.3);
+    box-shadow: 0 3px 10px rgba(39, 174, 96, 0.3);
 }
 
 .thrift-image-container {
     position: relative;
-    height: 220px;
+    height: 280px;
     overflow: hidden;
 }
 
@@ -72,7 +106,7 @@
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transition: transform 0.3s ease;
+    transition: transform 0.6s ease;
 }
 
 .thrift-card:hover .thrift-image {
@@ -84,46 +118,49 @@
     bottom: 1rem;
     right: 1rem;
     padding: 0.5rem 1rem;
-    border-radius: 12px;
+    border-radius: 15px;
     font-size: 1.1rem;
     font-weight: 600;
     color: var(--white);
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 .condition-excellent {
-    background: linear-gradient(135deg, #28a745, #20c997);
+    background: linear-gradient(135deg, #27AE60, #2ECC71);
 }
 
 .condition-good {
-    background: linear-gradient(135deg, #ffc107, #fd7e14);
+    background: linear-gradient(135deg, #F39C12, #F1C40F);
 }
 
 .condition-fair {
-    background: linear-gradient(135deg, #6c757d, #495057);
+    background: linear-gradient(135deg, #E67E22, #EB984E);
 }
 
-.condition-like-new {
-    background: linear-gradient(135deg, #17a2b8, #138496);
+.condition-acceptable {
+    background: linear-gradient(135deg, #E74C3C, #EC7063);
 }
 
-/* Thrift Info */
 .thrift-info {
-    padding: 2rem;
+    padding: 2.5rem;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
 }
 
 .thrift-title {
-    font-size: 1.8rem;
-    color: var(--dark);
-    margin-bottom: 0.5rem;
+    font-size: 1.9rem;
     font-weight: 700;
+    color: var(--dark);
     line-height: 1.3;
+    margin-bottom: 0.5rem;
 }
 
 .thrift-author {
-    font-size: 1.4rem;
-    color: var(--gray);
-    margin-bottom: 1.5rem;
+    font-size: 1.5rem;
+    color: var(--primary);
+    font-weight: 500;
     font-style: italic;
 }
 
@@ -131,7 +168,7 @@
     display: flex;
     flex-direction: column;
     gap: 0.8rem;
-    margin-bottom: 1.5rem;
+    margin: 1rem 0;
 }
 
 .meta-item {
@@ -145,57 +182,59 @@
 .meta-item i {
     color: var(--primary);
     width: 16px;
-    text-align: center;
 }
 
 .thrift-price {
     display: flex;
-    align-items: baseline;
-    gap: 0.8rem;
-    margin-bottom: 2rem;
-    padding: 1rem;
-    background: rgba(139, 95, 191, 0.05);
-    border-radius: 8px;
-    border-left: 3px solid var(--primary);
+    align-items: center;
+    gap: 1rem;
+    margin: 1rem 0;
 }
 
 .price {
     font-size: 2.2rem;
-    font-weight: 700;
-    color: var(--primary);
+    font-weight: 800;
+    color: var(--eco-green);
 }
 
 .price-note {
-    font-size: 1.2rem;
+    font-size: 1.3rem;
     color: var(--gray);
     font-style: italic;
 }
 
 .thrift-actions {
-    margin-bottom: 1.5rem;
+    margin-top: auto;
 }
 
 .btn-thrift {
-    background: linear-gradient(135deg, var(--accent) 0%, #25a897 100%);
     width: 100%;
-    padding: 1.2rem;
-    font-size: 1.4rem;
+    background: linear-gradient(135deg, var(--eco-green), var(--eco-dark));
+    color: var(--white);
+    border: none;
+    padding: 1.2rem 2rem;
+    border-radius: 12px;
+    font-size: 1.5rem;
     font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 0.8rem;
-    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(39, 174, 96, 0.3);
 }
 
 .btn-thrift:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(46, 196, 182, 0.4);
+    box-shadow: 0 6px 20px rgba(39, 174, 96, 0.4);
+    background: linear-gradient(135deg, var(--eco-dark), #1E8449);
 }
 
 .thrift-footer {
-    border-top: 1px solid rgba(139, 95, 191, 0.1);
-    padding-top: 1rem;
+    border-top: 1px solid var(--light-gray);
+    padding-top: 1.5rem;
+    margin-top: 1.5rem;
 }
 
 .posted-date {
@@ -206,52 +245,46 @@
     gap: 0.5rem;
 }
 
-/* Empty State */
+/* Empty Thrift State */
 .empty-thrift {
-    grid-column: 1 / -1;
     text-align: center;
     padding: 6rem 2rem;
+    grid-column: 1 / -1;
     background: var(--white);
-    border-radius: 16px;
-    box-shadow: var(--shadow);
-    border: 2px dashed rgba(139, 95, 191, 0.2);
+    border-radius: 20px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
 }
 
-.empty-thrift .empty-icon {
-    width: 80px;
-    height: 80px;
-    background: linear-gradient(135deg, var(--accent) 0%, #25a897 100%);
-    color: var(--white);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto 2rem;
-    font-size: 3rem;
+.empty-icon {
+    font-size: 6rem;
+    color: var(--eco-green);
+    margin-bottom: 2rem;
+    opacity: 0.7;
 }
 
 .empty-thrift h3 {
     font-size: 2.4rem;
     color: var(--dark);
-    margin-bottom: 1rem;
+    margin-bottom: 1.5rem;
 }
 
 .empty-thrift p {
     font-size: 1.6rem;
     color: var(--gray);
-    margin-bottom: 2.5rem;
+    margin-bottom: 3rem;
     max-width: 400px;
     margin-left: auto;
     margin-right: auto;
 }
 
-/* Thrift Benefits */
+/* Thrift Benefits Section */
 .thrift-benefits {
-    background: var(--white);
-    border-radius: 16px;
+    background: linear-gradient(135deg, var(--white) 0%, #fafbff 100%);
+    border-radius: 20px;
     padding: 4rem;
-    box-shadow: var(--shadow);
+    margin: 4rem 0;
     border: 1px solid rgba(139, 95, 191, 0.1);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.06);
 }
 
 .benefits-grid {
@@ -262,28 +295,45 @@
 
 .benefit-card {
     text-align: center;
-    padding: 2rem;
+    padding: 2.5rem 2rem;
+    background: var(--white);
+    border-radius: 16px;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+}
+
+.benefit-card:hover {
+    transform: translateY(-5px);
+    border-color: var(--eco-green);
+    box-shadow: 0 8px 25px rgba(39, 174, 96, 0.15);
 }
 
 .benefit-icon {
-    width: 70px;
-    height: 70px;
-    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-    color: var(--white);
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, var(--eco-light), #A9DFBF);
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin: 0 auto 1.5rem;
+    margin: 0 auto 2rem;
     font-size: 2.5rem;
-    box-shadow: 0 4px 15px rgba(139, 95, 191, 0.3);
+    color: var(--eco-green);
+    transition: all 0.3s ease;
+}
+
+.benefit-card:hover .benefit-icon {
+    background: linear-gradient(135deg, var(--eco-green), var(--eco-dark));
+    color: var(--white);
+    transform: scale(1.1);
 }
 
 .benefit-card h4 {
-    font-size: 1.8rem;
+    font-size: 2rem;
+    font-weight: 700;
     color: var(--dark);
     margin-bottom: 1rem;
-    font-weight: 600;
 }
 
 .benefit-card p {
@@ -292,19 +342,83 @@
     line-height: 1.5;
 }
 
+/* Enhanced Breadcrumb for Thrift */
+.thrift-section .breadcrumb {
+    background: linear-gradient(135deg, var(--eco-green) 0%, #229954 100%);
+}
+
+.thrift-section .breadcrumb-stat {
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.thrift-section .breadcrumb-stat i {
+    color: var(--white);
+}
+
+/* Newsletter Section */
+.newsletter {
+    background: linear-gradient(135deg, var(--dark) 0%, #3D405B 100%);
+    color: var(--white);
+    text-align: center;
+    padding: 6rem 2rem;
+}
+
+.newsletter h2 {
+    font-size: 3.2rem;
+    margin-bottom: 1.5rem;
+}
+
+.newsletter p {
+    font-size: 1.6rem;
+    margin-bottom: 3rem;
+    opacity: 0.9;
+    max-width: 500px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.newsletter-form {
+    display: flex;
+    max-width: 500px;
+    margin: 0 auto;
+    gap: 1rem;
+}
+
+.newsletter-input {
+    flex: 1;
+    padding: 1.5rem 2rem;
+    border: none;
+    border-radius: 12px;
+    font-size: 1.5rem;
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--white);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.newsletter-input::placeholder {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.newsletter-input:focus {
+    outline: none;
+    border-color: var(--eco-green);
+    background: rgba(255, 255, 255, 0.15);
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
-    .thrift-section {
-        padding: 4rem 0;
+    .thrift-grid {
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 2.5rem;
     }
     
-    .thrift-grid {
-        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-        gap: 2rem;
+    .section-title {
+        font-size: 2.8rem;
     }
     
     .thrift-info {
-        padding: 1.5rem;
+        padding: 2rem;
     }
     
     .thrift-benefits {
@@ -312,36 +426,98 @@
     }
     
     .benefits-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
         gap: 2rem;
     }
     
-    .empty-thrift {
-        padding: 4rem 1.5rem;
+    .benefit-card {
+        padding: 2rem 1.5rem;
+    }
+    
+    .benefit-icon {
+        width: 70px;
+        height: 70px;
+        font-size: 2rem;
+    }
+    
+    .newsletter-form {
+        flex-direction: column;
     }
 }
 
 @media (max-width: 576px) {
     .thrift-grid {
         grid-template-columns: 1fr;
+        gap: 2rem;
     }
     
-    .thrift-card {
-        margin: 0 1rem;
+    .section-title {
+        font-size: 2.4rem;
+    }
+    
+    .thrift-image-container {
+        height: 250px;
+    }
+    
+    .benefits-grid {
+        grid-template-columns: 1fr;
     }
     
     .thrift-benefits {
-        padding: 2rem 1.5rem;
-        margin: 0 1rem;
+        padding: 2.5rem 1.5rem;
+        margin: 3rem 0;
     }
     
-    .benefit-card {
-        padding: 1.5rem;
+    .empty-thrift {
+        padding: 4rem 1.5rem;
     }
     
-    .empty-thrift .empty-icon {
-        width: 60px;
-        height: 60px;
-        font-size: 2.4rem;
+    .empty-icon {
+        font-size: 4rem;
     }
+}
+
+/* Animation for thrift cards */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.thrift-card {
+    animation: fadeInUp 0.6s ease-out;
+}
+
+.thrift-card:nth-child(1) { animation-delay: 0.1s; }
+.thrift-card:nth-child(2) { animation-delay: 0.2s; }
+.thrift-card:nth-child(3) { animation-delay: 0.3s; }
+.thrift-card:nth-child(4) { animation-delay: 0.4s; }
+.thrift-card:nth-child(5) { animation-delay: 0.5s; }
+.thrift-card:nth-child(6) { animation-delay: 0.6s; }
+
+/* Eco-friendly theme enhancements */
+.thrift-section .breadcrumb::before {
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 100" fill="%23ffffff08"><path d="M500 50L550 25L600 50L650 25L700 50L750 25L800 50L850 25L900 50L950 25L1000 50L1000 100L0 100L0 50Z"/></svg>');
+}
+
+/* Special hover effect for eco theme */
+.thrift-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--eco-green), var(--accent));
+    transform: scaleX(0);
+    transition: transform 0.4s ease;
+}
+
+.thrift-card:hover::before {
+    transform: scaleX(1);
 }
