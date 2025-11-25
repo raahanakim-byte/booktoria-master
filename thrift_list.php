@@ -89,6 +89,11 @@ $select_products = mysqli_query($conn, "SELECT * FROM thrift_products ORDER BY p
                   <span class="breadcrumb-separator"><i class="fas fa-chevron-right"></i></span>
                   <span class="breadcrumb-current">Thrift Books</span>
                </div>
+               <div class="thrift-top-actions">
+                  <a href="add_thrift_book.php" class="btn btn-add-thrift">
+                     <i class="fas fa-plus-circle"></i> Sell Your Book
+                  </a>
+               </div>
                <div class="breadcrumb-stats">
                   <div class="breadcrumb-stat">
                      <i class="fas fa-recycle"></i>
