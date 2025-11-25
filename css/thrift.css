@@ -17,6 +17,81 @@
     --transition: all 0.3s ease;
 }
 
+.thrift-card {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 8px 18px rgba(0,0,0,0.08);
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    transition: 0.25s ease-in-out;
+    border: 1px solid #eee;
+}
+
+.thrift-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 22px rgba(0,0,0,0.12);
+}
+
+.thrift-image-container {
+    border-radius: 10px;
+    overflow: hidden;
+    height: 250px;
+}
+
+.thrift-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: .3s ease;
+}
+
+.thrift-card:hover .thrift-image {
+    transform: scale(1.05);
+}
+
+.thrift-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: #333;
+}
+
+.thrift-author {
+    font-size: 14px;
+    color: #777;
+    margin-bottom: 12px;
+}
+
+.thrift-price {
+    font-size: 22px;
+    color: #e67e22;
+    font-weight: 700;
+}
+
+.btn-thrift {
+    margin-top: 15px;
+    width: 100%;
+    background: #3498db;
+    padding: 12px;
+    border-radius: 8px;
+    color: white;
+    font-size: 15px;
+    font-weight: 600;
+    border: 0;
+}
+
+.btn-thrift:hover {
+    background: #2980b9;
+}
+
+.thrift-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 25px;
+    margin-top: 20px;
+}
+
+
 /* Thrift Section */
 .thrift-section {
     padding: 4rem 0;
@@ -27,6 +102,33 @@
     text-align: center;
     margin-bottom: 4rem;
 }
+
+.thrift-top-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 20px;
+}
+
+.btn-add-thrift {
+    background: #4CAF50;
+    color: #fff;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-size: 16px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: 0.2s ease-in-out;
+}
+
+.btn-add-thrift i {
+    margin-right: 8px;
+}
+
+.btn-add-thrift:hover {
+    background: #43A047;
+    box-shadow: 0px 4px 12px rgba(0,0,0,0.15);
+}
+
 
 .section-title {
     font-size: 3.2rem;
@@ -405,6 +507,120 @@
     border-color: var(--eco-green);
     background: rgba(255, 255, 255, 0.15);
 }
+
+/* ========== ADD THRIFT BOOK FORM PAGE ========== */
+
+.add-thrift-container {
+    max-width: 520px;
+    margin: 50px auto;
+    padding: 30px;
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.1);
+    animation: fadeIn 0.5s ease;
+}
+
+.add-thrift-container h2 {
+    text-align: center;
+    margin-bottom: 25px;
+    font-size: 26px;
+    font-weight: 700;
+    color: #333;
+}
+
+/* Form */
+.add-thrift-form {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.add-thrift-form label {
+    font-weight: 600;
+    color: #333;
+    font-size: 14px;
+}
+
+.add-thrift-form input,
+.add-thrift-form select {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 15px;
+    color: #333;
+    background: #fafafa;
+    transition: all .2s ease-in-out;
+}
+
+.add-thrift-form input:focus,
+.add-thrift-form select:focus {
+    border-color: #4b7bec;
+    background: #fff;
+    box-shadow: 0 0 0 2px rgba(75,123,236,0.2);
+    outline: none;
+}
+
+/* Button */
+.add-thrift-form .btn {
+    background-color: #4b7bec;
+    color: #fff;
+    padding: 12px;
+    border: none;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: .25s ease;
+}
+
+.add-thrift-form .btn:hover {
+    background-color: #3867d6;
+    box-shadow: 0 4px 12px rgba(56,103,214,0.4);
+}
+
+/* Messages */
+.message {
+    max-width: 480px;
+    margin: 20px auto;
+    padding: 12px 18px;
+    background: #4bb543;
+    color: white;
+    font-weight: 600;
+    text-align: center;
+    border-radius: 8px;
+    animation: slideDown 0.4s ease;
+}
+
+/* Image Preview */
+.image-preview {
+    width: 100%;
+    max-height: 260px;
+    object-fit: cover;
+    border-radius: 10px;
+    margin-top: 10px;
+    display: none;
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideDown {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Mobile Responsive */
+@media(max-width: 600px) {
+    .add-thrift-container {
+        padding: 20px;
+        margin: 20px;
+    }
+}
+
 
 /* Responsive Design */
 @media (max-width: 768px) {

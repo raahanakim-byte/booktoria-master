@@ -23,7 +23,7 @@ if (isset($_POST['add_to_cart'])) {
         // Check if already in cart
         $already_carted = mysqli_query($conn, "SELECT * FROM cart WHERE thrift_id = '$thrift_id' AND user_id = '$user_id'") or die('query failed');
         if (mysqli_num_rows($already_carted) > 0) {
-            $message[] = '⚠️ Already in cart!';
+            $message[] = 'Already in cart!';
         } else {
             $name = $thrift['title'];
             $price = $thrift['price'];
@@ -33,13 +33,13 @@ if (isset($_POST['add_to_cart'])) {
                 VALUES('$user_id', '$name', '$price', 1, '$image', 'thrift', '$thrift_id')") or die('query failed');
 
             if ($insert) {
-                $message[] = '✅ Thrift book added to cart!';
+                $message[] = 'hrift book added to cart!';
             } else {
-                $message[] = '❌ Failed to add to cart.';
+                $message[] = 'Failed to add to cart.';
             }
         }
     } else {
-        $message[] = '❌ Invalid thrift book!';
+        $message[] = 'Invalid thrift book!';
     }
 }
 
@@ -88,6 +88,11 @@ $select_products = mysqli_query($conn, "SELECT * FROM thrift_products ORDER BY p
                   </a>
                   <span class="breadcrumb-separator"><i class="fas fa-chevron-right"></i></span>
                   <span class="breadcrumb-current">Thrift Books</span>
+               </div>
+               <div class="thrift-top-actions">
+                  <a href="add_thrift_book.php" class="btn btn-add-thrift">
+                     <i class="fas fa-plus-circle"></i> Sell Your Book
+                  </a>
                </div>
                <div class="breadcrumb-stats">
                   <div class="breadcrumb-stat">
