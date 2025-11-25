@@ -324,10 +324,12 @@ function buildUrlParams($params) {
                         <span>
                            <?php
                            $product_name = mysqli_real_escape_string($conn, $fetch_products['name']);
-                           $bookQuantity = mysqli_query($conn, "SELECT COUNT(*) AS total_books FROM `products` WHERE `name` = '$product_name'");
-                           $row = mysqli_fetch_assoc($bookQuantity);
-                           $totalBooks = $row['total_books'];
-                           echo $totalBooks . ' in stock';
+                           $bookQuantity = mysqli_query($conn, "SELECT `stock` FROM `products` WHERE `name` = '$product_name'");
+                              if ($bookQuantity && mysqli_num_rows($bookQuantity) > 0) {
+                                 $row = mysqli_fetch_assoc($bookQuantity);
+                                 echo $row['stock'];  
+                              }
+                                          
                            ?>
                         </span>
                      </div>

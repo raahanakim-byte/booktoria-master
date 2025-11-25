@@ -120,7 +120,20 @@ $select_products = mysqli_query($conn, "SELECT * FROM `products` ORDER BY id DES
                      <input type="hidden" name="product_name" value="<?php echo $fetch_product['name']; ?>">
                      <input type="hidden" name="product_price" value="<?php echo $fetch_product['price']; ?>">
                      <input type="hidden" name="product_image" value="<?php echo $fetch_product['image']; ?>">
-                     <input type="number" min="1" name="product_quantity" value="1" class="quantity-input">
+                     <div class="stock-info">
+                        <i class="fas fa-cubes"></i>
+                        <span>
+                           <?php
+                           $product_name = mysqli_real_escape_string($conn, $fetch_product['name']);
+                           $bookQuantity = mysqli_query($conn, "SELECT `stock` FROM `products` WHERE `name` = '$product_name'");
+                              if ($bookQuantity && mysqli_num_rows($bookQuantity) > 0) {
+                                 $row = mysqli_fetch_assoc($bookQuantity);
+                                 echo $row['stock'];  
+                              }
+                                          
+                           ?>
+                        </span>
+                     </div>
 
                      <div class="card-buttons">
                         <a href="view_book.php?id=<?php echo $fetch_product['id']; ?>" class="btn-view">View Book</a>
@@ -169,7 +182,20 @@ $select_products = mysqli_query($conn, "SELECT * FROM `products` ORDER BY id DES
                         </div>
                         <div class="price">Rs. <?php echo $book['price']; ?>/-</div>
                         <div class="product-actions">
-                           <input type="number" min="1" name="product_quantity" value="1" class="quantity-input">
+                           <div class="stock-info">
+                              <i class="fas fa-cubes"></i>
+                              <span>
+                                 <?php
+                                 $product_name = mysqli_real_escape_string($conn, $book['name']);
+                                 $bookQuantity = mysqli_query($conn, "SELECT `stock` FROM `products` WHERE `name` = '$product_name'");
+                                    if ($bookQuantity && mysqli_num_rows($bookQuantity) > 0) {
+                                       $row = mysqli_fetch_assoc($bookQuantity);
+                                       echo $row['stock'];  
+                                    }
+                                                
+                                 ?>
+                              </span>
+                           </div>
                            <input type="hidden" name="product_name" value="<?php echo $book['name']; ?>">
                            <input type="hidden" name="product_price" value="<?php echo $book['price']; ?>">
                            <input type="hidden" name="product_image" value="<?php echo $book['image']; ?>">
