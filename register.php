@@ -7,7 +7,7 @@ if(isset($_POST['submit'])){
     $email = trim($_POST['email']);
     $password = $_POST['password'];
     $cpassword = $_POST['cpassword'];
-    $user_type = $_POST['user_type'];
+    $user_type = "user";
 
     // Validation
     if (!preg_match("/^[a-zA-Z\s]+$/", $name)) {
@@ -104,13 +104,7 @@ if(isset($message)){
                 </div>
             </div>
 
-            <div class="form-group">
-                <label class="form-label">Account Type</label>
-                <select name="user_type" class="form-input">
-                    <option value="user">User</option>
-                    <option value="admin">Admin</option>
-                </select>
-            </div>
+            
 
             <button type="submit" name="submit" class="auth-btn primary">
                 <span class="btn-text">Register Now</span>

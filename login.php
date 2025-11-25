@@ -102,14 +102,7 @@ if(isset($message)){
             </div>
          </div>
 
-         <div class="form-options">
-            <label class="checkbox-container">
-               <input type="checkbox" name="remember">
-               <span class="checkmark"></span>
-               Remember me
-            </label>
-            <a href="forgot_password.php" class="forgot-link">Forgot password?</a>
-         </div>
+         
 
          <button type="submit" name="submit" class="auth-btn primary">
             <span class="btn-text">Sign In</span>
@@ -121,16 +114,7 @@ if(isset($message)){
          <span>Or continue with</span>
       </div>
 
-      <div class="social-login">
-         <button type="button" class="social-btn google">
-            <i class="fab fa-google"></i>
-            Google
-         </button>
-         <button type="button" class="social-btn facebook">
-            <i class="fab fa-facebook-f"></i>
-            Facebook
-         </button>
-      </div>
+    
 
       <div class="auth-footer">
          <p>Don't have an account? <a href="register.php" class="auth-link">Create account</a></p>
