@@ -24,9 +24,6 @@ if (!$order) {
     die("Order not found.");
 }
 
-// ----------------------------
-// 🔵 VERIFY WITH KHALTI SERVER
-// ----------------------------
 $verify_payload = json_encode([
     "pidx" => $pidx
 ]);
@@ -51,9 +48,6 @@ curl_close($curl);
 
 $res = json_decode($response, true);
 
-// -------------------------------
-// 🔵 HANDLE VERIFICATION RESPONSE
-// -------------------------------
 if (!$res || !isset($res['status'])) {
     die("Could not verify payment. Response: <pre>" . print_r($res, true) . "</pre>");
 }
@@ -97,6 +91,8 @@ if ($status === "Completed") {
     $_SESSION['success_message'] = "Payment successful! Your order has been confirmed.";
 
     // 5️⃣ Redirect to orders page
+    mysqli_query($conn, "DELETE FROM cart WHERE user_id='$user_id'");
+
     header("Location: orders.php");
     exit;
 
@@ -108,7 +104,6 @@ if ($status === "Completed") {
 
 } else {
 
-    // Payment failed or cancelled
     mysqli_query($conn, "
         UPDATE orders 
         SET payment_status='failed'
