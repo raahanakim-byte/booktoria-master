@@ -15,13 +15,20 @@
 /* Messages */
 .message {
     background: #ffefc5;
-    border-left: 5px solid #ffc107;
-    padding: 1rem;
-    margin-bottom: 1rem;
-    border-radius: 8px;
+    position: fixed;
+    top: 90px;
+    right: 20px;
+    padding: 1.2rem 1.8rem;
+    background: var(--primary);
+    color: white;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    z-index: 1001;
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    gap: 1rem;
+    max-width: 350px;
+    animation: slideIn 0.3s ease;
 }
 
 .message i {
@@ -75,27 +82,34 @@
 
 /* Buttons */
 .btn {
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     padding: 0.6rem 1.2rem;
     text-decoration: none;
-    border-radius: 6px;
+    border-radius: 10px;
     font-weight: 600;
-    transition: 0.2s ease;
-    margin-top: 0.5rem;
+    transition: 0.3s ease;
+    cursor: pointer;
 }
 
 .btn-primary {
-    background: #007bff;
+   background: linear-gradient(135deg, var(--primary), var(--primary-dark));
     color: #fff;
+    border: none;
+    box-shadow: 0 4px 15px rgba(139, 95, 191, 0.3);
 }
 
 .btn-primary:hover {
-    background: #0069d9;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(139, 95, 191, 0.4),
+                0 2px 8px rgba(139, 95, 191, 0.3);
 }
 
 .btn-danger {
     background: #dc3545;
     color: #fff;
+    border: none
 }
 
 .btn-danger:hover {
@@ -103,12 +117,13 @@
 }
 
 .btn-warning {
-    background: #ffc107;
-    color: #212529;
+   background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    color: #fff;
+    border: none;
 }
 
 .btn-warning:hover {
-    background: #e0a800;
+     background: linear-gradient(135deg, var(--primary-dark), var(--primary));
 }
 
 /* Cart Summary */
@@ -148,3 +163,15 @@
         text-align: left;
     }
 }
+.update-qty-form {
+    margin-top: 10px;
+}
+
+.quantity-input {
+    width: 70px;
+    padding: 6px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 15px;
+}
+

@@ -81,7 +81,7 @@
 /* Buttons */
 .checkout-form .btn-primary {
     display: inline-block;
-    background: #1976d2;
+    background:linear-gradient(135deg, var(--primary), var(--primary-dark)) ;
     color: #fff;
     padding: 15px 30px;
     border: none;
@@ -93,8 +93,9 @@
 }
 
 .checkout-form .btn-primary:hover {
-    background: #115293;
-    transform: translateY(-2px);
+   transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(139, 95, 191, 0.4),
+                0 2px 8px rgba(139, 95, 191, 0.3);
 }
 
 /* Order Summary (Right) */

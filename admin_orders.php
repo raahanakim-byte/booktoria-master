@@ -9,68 +9,13 @@ if(!isset($admin_id)){
    exit;
 }
 
-// Function to decrease product stock
-function decreaseProductStock($conn, $product_name, $quantity) {
-    $product_name = mysqli_real_escape_string($conn, $product_name);
-    $quantity = intval($quantity);
-    
-    // Get current stock
-    $product_query = mysqli_query($conn, "SELECT id, stock FROM `products` WHERE name = '$product_name'");
-    if(mysqli_num_rows($product_query) > 0) {
-        $product = mysqli_fetch_assoc($product_query);
-        $current_stock = $product['stock'];
-        $new_stock = max(0, $current_stock - $quantity);
-        
-        // Update stock
-        mysqli_query($conn, "UPDATE `products` SET stock = '$new_stock' WHERE id = '{$product['id']}'");
-        return true;
-    }
-    return false;
-}
-
-// Function to increase product stock
-function increaseProductStock($conn, $product_name, $quantity) {
-    $product_name = mysqli_real_escape_string($conn, $product_name);
-    $quantity = intval($quantity);
-    
-    // Get current stock
-    $product_query = mysqli_query($conn, "SELECT id, stock FROM `products` WHERE name = '$product_name'");
-    if(mysqli_num_rows($product_query) > 0) {
-        $product = mysqli_fetch_assoc($product_query);
-        $current_stock = $product['stock'];
-        $new_stock = $current_stock + $quantity;
-        
-        // Update stock
-        mysqli_query($conn, "UPDATE `products` SET stock = '$new_stock' WHERE id = '{$product['id']}'");
-        return true;
-    }
-    return false;
-}
-
 // Approve Order
 if(isset($_POST['approve_order'])){
     $order_id = intval($_POST['order_id']);
-    $order_query = mysqli_query($conn, "SELECT * FROM `orders` WHERE id='$order_id'");
     
-    if(mysqli_num_rows($order_query) > 0) {
-        $order = mysqli_fetch_assoc($order_query);
-
-        // Update status to completed
-        mysqli_query($conn, "UPDATE `orders` SET payment_status='completed' WHERE id='$order_id'");
-
-        // Decrease stock
-        $total_products = $order['total_products'];
-        preg_match_all('/([^(]+)\s*\((\d+)\)/x', $total_products, $matches, PREG_SET_ORDER);
-        foreach($matches as $match) {
-            $product_name = trim($match[1]);
-            $quantity = (int)$match[2];
-            decreaseProductStock($conn, $product_name, $quantity);
-        }
-
-        $_SESSION['success_message'] = "Order #$order_id approved and stock updated!";
-    } else {
-        $_SESSION['error_message'] = "Order not found!";
-    }
+    // Update status to completed
+    mysqli_query($conn, "UPDATE `orders` SET payment_status='completed' WHERE id='$order_id'");
+    $_SESSION['success_message'] = "Order #$order_id approved!";
     header('location:admin_orders.php');
     exit;
 }
@@ -79,27 +24,8 @@ if(isset($_POST['approve_order'])){
 if(isset($_POST['disapprove_order'])){
     $order_id = intval($_POST['order_id']);
     
-    // Get order details to check if it was completed (to restore stock)
-    $order_query = mysqli_query($conn, "SELECT * FROM `orders` WHERE id='$order_id'");
-    if(mysqli_num_rows($order_query) > 0) {
-        $order = mysqli_fetch_assoc($order_query);
-        
-        // If order was completed, restore stock
-        if($order['payment_status'] == 'completed') {
-            $total_products = $order['total_products'];
-            preg_match_all('/([^(]+)\s*\((\d+)\)/x', $total_products, $matches, PREG_SET_ORDER);
-            foreach($matches as $match) {
-                $product_name = trim($match[1]);
-                $quantity = (int)$match[2];
-                increaseProductStock($conn, $product_name, $quantity);
-            }
-        }
-        
-        mysqli_query($conn, "UPDATE `orders` SET payment_status='cancelled' WHERE id='$order_id'");
-        $_SESSION['success_message'] = "Order #$order_id has been cancelled and stock restored!";
-    } else {
-        $_SESSION['error_message'] = "Order not found!";
-    }
+    mysqli_query($conn, "UPDATE `orders` SET payment_status='cancelled' WHERE id='$order_id'");
+    $_SESSION['success_message'] = "Order #$order_id has been cancelled!";
     header('location:admin_orders.php');
     exit;
 }
@@ -108,40 +34,10 @@ if(isset($_POST['disapprove_order'])){
 if(isset($_POST['update_order'])){
    $order_update_id = intval($_POST['order_id']);
    $update_payment = mysqli_real_escape_string($conn, $_POST['update_payment']);
-   $current_status = mysqli_real_escape_string($conn, $_POST['current_status']);
    
-   // Get order details before updating
-   $order_query = mysqli_query($conn, "SELECT * FROM `orders` WHERE id = '$order_update_id'");
-   if(mysqli_num_rows($order_query) > 0) {
-       $order = mysqli_fetch_assoc($order_query);
-       
-       // Handle stock changes based on status transition
-       if($current_status == 'completed' && $update_payment != 'completed') {
-           // Restore stock if moving from completed to another status
-           $total_products = $order['total_products'];
-           preg_match_all('/([^(]+)\s*\((\d+)\)/x', $total_products, $matches, PREG_SET_ORDER);
-           foreach($matches as $match) {
-               $product_name = trim($match[1]);
-               $quantity = (int)$match[2];
-               increaseProductStock($conn, $product_name, $quantity);
-           }
-       } elseif($current_status != 'completed' && $update_payment == 'completed') {
-           // Decrease stock if moving to completed
-           $total_products = $order['total_products'];
-           preg_match_all('/([^(]+)\s*\((\d+)\)/x', $total_products, $matches, PREG_SET_ORDER);
-           foreach($matches as $match) {
-               $product_name = trim($match[1]);
-               $quantity = (int)$match[2];
-               decreaseProductStock($conn, $product_name, $quantity);
-           }
-       }
-       
-       // Update payment status
-       mysqli_query($conn, "UPDATE `orders` SET payment_status = '$update_payment' WHERE id = '$order_update_id'");
-       $_SESSION['success_message'] = 'Order status updated successfully!';
-   } else {
-       $_SESSION['error_message'] = 'Order not found!';
-   }
+   // Update payment status
+   mysqli_query($conn, "UPDATE `orders` SET payment_status = '$update_payment' WHERE id = '$order_update_id'");
+   $_SESSION['success_message'] = 'Order status updated successfully!';
    header('location:admin_orders.php');
    exit;
 }
@@ -150,27 +46,8 @@ if(isset($_POST['update_order'])){
 if(isset($_GET['delete'])){
    $delete_id = intval($_GET['delete']);
    
-   // Get order details to restore stock if it was completed
-   $order_query = mysqli_query($conn, "SELECT * FROM `orders` WHERE id = '$delete_id'");
-   if(mysqli_num_rows($order_query) > 0) {
-       $order = mysqli_fetch_assoc($order_query);
-       
-       // Restore stock if order was completed
-       if($order['payment_status'] == 'completed') {
-           $total_products = $order['total_products'];
-           preg_match_all('/([^(]+)\s*\((\d+)\)/x', $total_products, $matches, PREG_SET_ORDER);
-           foreach($matches as $match) {
-               $product_name = trim($match[1]);
-               $quantity = (int)$match[2];
-               increaseProductStock($conn, $product_name, $quantity);
-           }
-       }
-       
-       mysqli_query($conn, "DELETE FROM `orders` WHERE id = '$delete_id'");
-       $_SESSION['success_message'] = "Order #$delete_id deleted successfully!";
-   } else {
-       $_SESSION['error_message'] = "Order not found!";
-   }
+   mysqli_query($conn, "DELETE FROM `orders` WHERE id = '$delete_id'");
+   $_SESSION['success_message'] = "Order #$delete_id deleted successfully!";
    header('location:admin_orders.php');
    exit;
 }
@@ -336,7 +213,8 @@ $select_orders = mysqli_query($conn, "
                      <?php while($fetch_orders = mysqli_fetch_assoc($select_orders)): 
                         $status_class = 'status-' . $fetch_orders['payment_status'];
                         $is_completed = $fetch_orders['payment_status'] == 'completed';
-                        $is_pending = $fetch_orders['payment_status'] == 'pending';
+                        $is_pending = in_array($fetch_orders['payment_status'], ['pending', 'khalti_initiated']);
+
                      ?>
                      <tr class="order-row" data-status="<?php echo $fetch_orders['payment_status']; ?>">
                         <td class="order-id">#<?php echo $fetch_orders['id']; ?></td>
@@ -349,9 +227,25 @@ $select_orders = mysqli_query($conn, "
                            </div>
                         </td>
                         <td class="products-info">
-                           <div class="products-count"><?php echo $fetch_orders['total_products']; ?></div>
-                           <div class="user-id">User: <?php echo htmlspecialchars($fetch_orders['user_name'] ?? 'N/A'); ?></div>
-                        </td>
+    <?php 
+    $products = json_decode($fetch_orders['order_items'], true);
+    if($products && count($products) > 0):
+        foreach($products as $product):
+    ?>
+        <div class="product-item" style="margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 5px;">
+            <div><strong>Product:</strong> <?php echo htmlspecialchars($product['name']); ?></div>
+            <div><strong>Quantity:</strong> <?php echo intval($product['quantity']); ?></div>
+            <div><strong>Price:</strong> Rs. <?php echo number_format($product['sub_total']); ?></div>
+        </div>
+    <?php 
+        endforeach;
+    else: 
+        echo "<em>No products</em>";
+    endif;
+    ?>
+    <div class="user-id" style="margin-top: 5px;"><strong>User:</strong> <?php echo htmlspecialchars($fetch_orders['user_name'] ?? 'N/A'); ?></div>
+</td>
+
                         <td class="order-amount">
                            <strong>Rs. <?php echo number_format($fetch_orders['total_price']); ?>/-</strong>
                         </td>
@@ -374,10 +268,6 @@ $select_orders = mysqli_query($conn, "
                         </td>
                         <td class="order-actions">
                            <div class="action-buttons">
-                              <button class="action-btn view-btn" data-order-id="<?= $fetch_orders['id']; ?>" title="View Details">
-                                 <i class="fas fa-eye"></i>
-                              </button>
-
                               <?php if($is_pending): ?>
                                  <button type="button" class="action-btn approve-btn" 
                                          onclick="approveOrder(<?= $fetch_orders['id']; ?>)" 
@@ -484,7 +374,7 @@ $select_orders = mysqli_query($conn, "
 <script>
 // Order management functions
 function approveOrder(orderId) {
-    if(confirm('Are you sure you want to approve order #' + orderId + '? This will decrease product stock.')) {
+    if(confirm('Are you sure you want to approve order #' + orderId + '?')) {
         document.getElementById('approve-order-id').value = orderId;
         document.getElementById('approve-form').submit();
     }
@@ -559,8 +449,6 @@ function loadOrderDetails(orderId) {
         </div>
     `;
 
-    // In a real implementation, you'd fetch this via AJAX
-    // For now, we'll simulate with a timeout
     setTimeout(() => {
         content.innerHTML = `
             <div class="order-details">

@@ -62,17 +62,41 @@ $status = $res['status'];
 
 if ($status === "Completed") {
 
-    // 1️⃣ Update payment status
+    // 🆕 1️⃣ DECREASE PRODUCT STOCK (ADD THIS SECTION)
+    $order_items = json_decode($order['order_items'], true);
+    
+    if($order_items && count($order_items) > 0) {
+        foreach($order_items as $item) {
+            $product_name = mysqli_real_escape_string($conn, $item['name']);
+            $quantity = intval($item['quantity']);
+            
+            // Update stock in products table
+            mysqli_query($conn, "UPDATE products SET stock = stock - $quantity WHERE name = '$product_name'");
+            
+            // Optional: Log if stock goes negative (for debugging)
+            $check_stock = mysqli_query($conn, "SELECT stock, name FROM products WHERE name = '$product_name'");
+            if($stock_data = mysqli_fetch_assoc($check_stock)) {
+                if($stock_data['stock'] < 0) {
+                    error_log("⚠️ Negative stock for: " . $stock_data['name']);
+                }
+            }
+        }
+    }
+
+    // 2️⃣ Update payment status
     mysqli_query($conn, "
         UPDATE orders 
-        SET payment_status='paid'
+        SET payment_status='completed'
         WHERE id='$local_order_id'
     ");
 
-    // 2️⃣ Clear cart
+    // 3️⃣ Clear cart
     mysqli_query($conn, "DELETE FROM cart WHERE user_id='$user_id'");
 
-    // 3️⃣ Redirect to orders page
+    // 4️⃣ Set success message
+    $_SESSION['success_message'] = "Payment successful! Your order has been confirmed.";
+
+    // 5️⃣ Redirect to orders page
     header("Location: orders.php");
     exit;
 

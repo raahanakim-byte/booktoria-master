@@ -34,6 +34,7 @@ $user = mysqli_fetch_assoc(mysqli_query($conn, "SELECT name, email FROM users WH
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Checkout - BookNook</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <link rel="stylesheet" href="css/home.css">
 <link rel="stylesheet" href="css/sidebar.css">
 <link rel="stylesheet" href="css/checkout.css">

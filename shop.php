@@ -4,29 +4,76 @@ include 'recommendations.php';
 
 session_start();
 
-$user_id = $_SESSION['user_id'];
-$recommended_books = getRecommendedBooks($conn, $user_id);
 
-if(!isset($user_id)){
-   header('location:login.php');
-   exit;
+
+
+
+/* ======================================================
+   STOCK VALIDATION FUNCTION
+====================================================== */
+function checkStockBeforeAdd($conn, $product_name, $quantity) {
+    $product_name = mysqli_real_escape_string($conn, $product_name);
+    $stock_check = mysqli_query($conn, "SELECT stock FROM products WHERE name = '$product_name'");
+    
+    if(mysqli_num_rows($stock_check) > 0) {
+        $product = mysqli_fetch_assoc($stock_check);
+        $current_stock = $product['stock'];
+        
+        if($current_stock <= 0) {
+            return 'Product is out of stock!';
+        }
+        
+        if($quantity > $current_stock) {
+            return "Only $current_stock items available in stock!";
+        }
+        
+        return true;
+    }
+    
+    return 'Product not found!';
 }
 
-if(isset($_POST['add_to_cart'])){
+if (isset($_POST['add_to_cart'])) {
+    $product_name = $_POST['product_name'];
+    $product_price = $_POST['product_price'];
+    $product_image = $_POST['product_image'];
+    $product_quantity = (int)($_POST['product_quantity']?? 1);
 
-   $product_name = mysqli_real_escape_string($conn, $_POST['product_name']);
-   $product_price = mysqli_real_escape_string($conn, $_POST['product_price']);
-   $product_image = mysqli_real_escape_string($conn, $_POST['product_image']);
-   $product_quantity = (int)$_POST['product_quantity'];
+    if ($user_id) {
+        // FIRST: CHECK STOCK AVAILABILITY
+        $stock_check = checkStockBeforeAdd($conn, $product_name, $product_quantity);
+        
+        if($stock_check !== true) {
+            $message[] = $stock_check;
+        } else {
+            // Check if product already in cart
+            $check_cart_numbers = mysqli_query($conn, "SELECT * FROM `cart` WHERE name = '$product_name' AND user_id = '$user_id'") or die('query failed');
 
-   $check_cart_numbers = mysqli_query($conn, "SELECT * FROM `cart` WHERE name = '$product_name' AND user_id = '$user_id'") or die('query failed');
-
-   if(mysqli_num_rows($check_cart_numbers) > 0){
-      $message[] = 'already added to cart!';
-   }else{
-      mysqli_query($conn, "INSERT INTO `cart`(user_id, name, price, quantity, image) VALUES('$user_id', '$product_name', '$product_price', '$product_quantity', '$product_image')") or die('query failed');
-      $message[] = 'product added to cart!';
-   }
+            if (mysqli_num_rows($check_cart_numbers) > 0) {
+                // ✅ CHECK IF THIS IS SECOND ATTEMPT
+                if(isset($_SESSION['duplicate_attempt'][$product_name])) {
+                    // Second attempt - REDIRECT TO CART
+                    $_SESSION['info_message'] = 'This book is already in your cart!';
+                    unset($_SESSION['duplicate_attempt'][$product_name]); // Clear the flag
+                    header('location: cart.php');
+                    exit;
+                } else {
+                    // First attempt - SHOW MESSAGE
+                    $_SESSION['duplicate_attempt'][$product_name] = true; // Set flag
+                    $message[] = 'This book is already in your cart! Click "Add to Cart" again to view your cart.';
+                }
+            } else {
+                // New item - ADD TO CART
+                mysqli_query($conn, "INSERT INTO `cart`(user_id, name, price, quantity, image) VALUES('$user_id', '$product_name', '$product_price', '$product_quantity', '$product_image')") or die('query failed');
+                $message[] = 'Product added to cart!';
+                
+                // Clear any duplicate flags for this product
+                if(isset($_SESSION['duplicate_attempt'][$product_name])) {
+                    unset($_SESSION['duplicate_attempt'][$product_name]);
+                }
+            }
+        }
+    }
 }
 
 // Get unique genres from database
@@ -128,15 +175,69 @@ function buildUrlParams($params) {
    <link rel="stylesheet" href="css/home.css">
    <link rel="stylesheet" href="css/shop.css">
    <link rel="stylesheet" href="css/sidebar.css">
+   <style>
+    {display: flex;
+          align-items: center;
+          gap: 5px;
+          margin: 8px 0;
+          font-size: 14px;
+      }
+      
+      .stock-info.out-of-stock {
+          color: #dc3545;
+          font-weight: bold;
+      }
+      
+      .stock-info.low-stock {
+          color: #ffc107;
+          font-weight: bold;
+      }
+      
+      .stock-info.in-stock {
+          color: #28a745;
+      }
+      
+      .btn-cart:disabled {
+          background-color: #6c757d;
+          cursor: not-allowed;
+          opacity: 0.6;
+      }
+      
+      .stock-badge {
+          position: absolute;
+          top: 10px;
+          left: 10px;
+          padding: 4px 8px;
+          border-radius: 12px;
+          font-size: 11px;
+          font-weight: bold;
+          z-index: 2;
+      }
+      
+      .badge-out-of-stock {
+          background-color: #dc3545;
+          color: white;
+      }
+      
+      .badge-low-stock {
+          background-color: #ffc107;
+          color: black;
+      }
+      
+      .card-image {
+          position: relative;
+      }
+   </style>
+
 </head>
 <body>
    <!-- Display Messages -->
    <?php
    if(isset($message)){
-      foreach($message as $message){
+      foreach($message as $msg){
          echo '
          <div class="message">
-            <span>'.$message.'</span>
+            <span>'.$msg.'</span>
             <i class="fas fa-times" onclick="this.parentElement.remove();"></i>
          </div>
          ';
@@ -305,10 +406,26 @@ function buildUrlParams($params) {
                <?php  
                if(mysqli_num_rows($select_products) > 0){
                   while($fetch_products = mysqli_fetch_assoc($select_products)){
+                     // Get current stock
+                     $product_name_esc = mysqli_real_escape_string($conn, $fetch_products['name']);
+                     $stock_query = mysqli_query($conn, "SELECT stock FROM products WHERE name = '$product_name_esc'");
+                     $stock_data = mysqli_fetch_assoc($stock_query);
+                     $current_stock = $stock_data['stock'] ?? 0;
+                     
+                     // Determine stock status
+                     $is_out_of_stock = $current_stock <= 0;
+                     $is_low_stock = $current_stock > 0 && $current_stock <= 5;
+                     $stock_class = $is_out_of_stock ? 'out-of-stock' : ($is_low_stock ? 'low-stock' : 'in-stock');
+                     $stock_message = $is_out_of_stock ? 'Out of Stock' : ($is_low_stock ? "Only $current_stock left!" : "$current_stock in stock");
                ?>
                <form action="" method="post" class="product-card">
                   <div class="card-image">
                      <img src="uploaded_img/<?php echo htmlspecialchars($fetch_products['image']); ?>" alt="<?php echo htmlspecialchars($fetch_products['name']); ?>">
+                     <?php if($is_out_of_stock): ?>
+                        <div class="stock-badge badge-out-of-stock">Out of Stock</div>
+                     <?php elseif($is_low_stock): ?>
+                        <div class="stock-badge badge-low-stock">Low Stock</div>
+                     <?php endif; ?>
                   </div>
                   <div class="card-body">
                      <h3><?php echo htmlspecialchars($fetch_products['name']); ?></h3>
@@ -319,21 +436,14 @@ function buildUrlParams($params) {
                            <span class="location"><i class="fas fa-map-marker-alt"></i> <?php echo htmlspecialchars($fetch_products['location']); ?></span>
                         <?php endif; ?>
                      </div>
-                     <div class="stock-info">
+                     
+                     <div class="stock-info <?php echo $stock_class; ?>">
                         <i class="fas fa-cubes"></i>
-                        <span>
-                           <?php
-                           $product_name = mysqli_real_escape_string($conn, $fetch_products['name']);
-                           $bookQuantity = mysqli_query($conn, "SELECT `stock` FROM `products` WHERE `name` = '$product_name'");
-                              if ($bookQuantity && mysqli_num_rows($bookQuantity) > 0) {
-                                 $row = mysqli_fetch_assoc($bookQuantity);
-                                 echo $row['stock'];  
-                              }
-                                          
-                           ?>
-                        </span>
+                        <span><?php echo $stock_message; ?></span>
                      </div>
+                     
                      <div class="price">Rs. <?php echo htmlspecialchars($fetch_products['price']); ?>/-</div>
+                     
                      <input type="hidden" name="product_name" value="<?php echo htmlspecialchars($fetch_products['name']); ?>">
                      <input type="hidden" name="product_price" value="<?php echo htmlspecialchars($fetch_products['price']); ?>">
                      <input type="hidden" name="product_image" value="<?php echo htmlspecialchars($fetch_products['image']); ?>">
@@ -341,7 +451,9 @@ function buildUrlParams($params) {
 
                      <div class="card-buttons">
                         <a href="view_book.php?id=<?php echo $fetch_products['id']; ?>" class="btn-view">View Book</a>
-                        <button type="submit" name="add_to_cart" class="btn-cart">Add to Cart</button>
+                        <button type="submit" name="add_to_cart" class="btn-cart" <?php echo $is_out_of_stock ? 'disabled' : ''; ?>>
+                           <?php echo $is_out_of_stock ? 'Out of Stock' : 'Add to Cart'; ?>
+                        </button>
                      </div>
                   </div>
                </form>

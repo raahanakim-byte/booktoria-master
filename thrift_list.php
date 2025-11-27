@@ -11,6 +11,37 @@ if (!isset($user_id)) {
     exit();
 }
 
+/* ======================================================
+   THRIFT STOCK VALIDATION FUNCTION
+====================================================== */
+function checkThriftStockBeforeAdd($conn, $thrift_id, $quantity) {
+    $thrift_id = mysqli_real_escape_string($conn, $thrift_id);
+    $stock_check = mysqli_query($conn, "SELECT stock, status FROM thrift_products WHERE id = '$thrift_id'");
+    
+    if(mysqli_num_rows($stock_check) > 0) {
+        $product = mysqli_fetch_assoc($stock_check);
+        $current_stock = $product['stock'];
+        $status = $product['status'];
+        
+        // Check if product is available
+        if($status !== 'available') {
+            return 'This book is no longer available!';
+        }
+        
+        if($current_stock <= 0) {
+            return 'This thrift book is out of stock!';
+        }
+        
+        if($quantity > $current_stock) {
+            return "Only $current_stock items available!";
+        }
+        
+        return true;
+    }
+    
+    return 'Thrift book not found!';
+}
+
 // Handle add-to-cart
 if (isset($_POST['add_to_cart'])) {
     $thrift_id = $_POST['thrift_id'];
@@ -20,22 +51,47 @@ if (isset($_POST['add_to_cart'])) {
     if (mysqli_num_rows($check_thrift) > 0) {
         $thrift = mysqli_fetch_assoc($check_thrift);
 
-        // Check if already in cart
-        $already_carted = mysqli_query($conn, "SELECT * FROM cart WHERE thrift_id = '$thrift_id' AND user_id = '$user_id'") or die('query failed');
-        if (mysqli_num_rows($already_carted) > 0) {
-            $message[] = 'Already in cart!';
+        // FIRST: CHECK STOCK AVAILABILITY
+        $stock_check = checkThriftStockBeforeAdd($conn, $thrift_id, 1);
+        
+        if($stock_check !== true) {
+            $message[] = $stock_check;
         } else {
-            $name = $thrift['title'];
-            $price = $thrift['price'];
-            $image = $thrift['image'];
-
-            $insert = mysqli_query($conn, "INSERT INTO cart(user_id, name, price, quantity, image, type, thrift_id)
-                VALUES('$user_id', '$name', '$price', 1, '$image', 'thrift', '$thrift_id')") or die('query failed');
-
-            if ($insert) {
-                $message[] = 'hrift book added to cart!';
+            // Check if already in cart
+            $already_carted = mysqli_query($conn, "SELECT * FROM cart WHERE thrift_id = '$thrift_id' AND user_id = '$user_id'") or die('query failed');
+            
+            if (mysqli_num_rows($already_carted) > 0) {
+                // ✅ CHECK IF THIS IS SECOND ATTEMPT
+                if(isset($_SESSION['thrift_duplicate_attempt'][$thrift_id])) {
+                    // Second attempt - REDIRECT TO CART
+                    $_SESSION['info_message'] = 'This thrift book is already in your cart!';
+                    unset($_SESSION['thrift_duplicate_attempt'][$thrift_id]); // Clear the flag
+                    header('location: cart.php');
+                    exit;
+                } else {
+                    // First attempt - SHOW MESSAGE
+                    $_SESSION['thrift_duplicate_attempt'][$thrift_id] = true; // Set flag
+                    $message[] = 'This thrift book is already in your cart! Click "Add to Cart" again to view your cart.';
+                }
             } else {
-                $message[] = 'Failed to add to cart.';
+                // New item - ADD TO CART
+                $name = $thrift['title'];
+                $price = $thrift['price'];
+                $image = $thrift['image'];
+
+                $insert = mysqli_query($conn, "INSERT INTO cart(user_id, name, price, quantity, image, type, thrift_id)
+                    VALUES('$user_id', '$name', '$price', 1, '$image', 'thrift', '$thrift_id')") or die('query failed');
+
+                if ($insert) {
+                    $message[] = 'Thrift book added to cart!';
+                    
+                    // Clear any duplicate flags for this product
+                    if(isset($_SESSION['thrift_duplicate_attempt'][$thrift_id])) {
+                        unset($_SESSION['thrift_duplicate_attempt'][$thrift_id]);
+                    }
+                } else {
+                    $message[] = 'Failed to add to cart.';
+                }
             }
         }
     } else {
@@ -43,8 +99,8 @@ if (isset($_POST['add_to_cart'])) {
     }
 }
 
-// Fetch thrift products
-$select_products = mysqli_query($conn, "SELECT * FROM thrift_products ORDER BY posted_on DESC") or die('Query failed');
+// Fetch thrift products with stock and status check
+$select_products = mysqli_query($conn, "SELECT * FROM thrift_products WHERE status = 'available' ORDER BY posted_on DESC") or die('Query failed');
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -57,6 +113,66 @@ $select_products = mysqli_query($conn, "SELECT * FROM thrift_products ORDER BY p
     <link rel="stylesheet" href="css/shop.css">
     <link rel="stylesheet" href="css/thrift.css">
     <link rel="stylesheet" href="css/sidebar.css">
+    <style>
+        /* Stock Management Styles */
+        .thrift-stock-info {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin: 8px 0;
+            font-size: 14px;
+        }
+        
+        .thrift-stock-info.out-of-stock {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        
+        .thrift-stock-info.low-stock {
+            color: #ffc107;
+            font-weight: bold;
+        }
+        
+        .thrift-stock-info.in-stock {
+            color: #28a745;
+        }
+        
+        .btn-thrift:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+        
+        .thrift-stock-badge {
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 2;
+        }
+        
+        .thrift-badge-out-of-stock {
+            background-color: #dc3545;
+            color: white;
+        }
+        
+        .thrift-badge-low-stock {
+            background-color: #ffc107;
+            color: black;
+        }
+        
+        .thrift-badge-sold {
+            background-color: #6c757d;
+            color: white;
+        }
+        
+        .thrift-image-container {
+            position: relative;
+        }
+    </style>
 </head>
 <body>
    <!-- Display Messages -->
@@ -97,7 +213,7 @@ $select_products = mysqli_query($conn, "SELECT * FROM thrift_products ORDER BY p
                <div class="breadcrumb-stats">
                   <div class="breadcrumb-stat">
                      <i class="fas fa-recycle"></i>
-                     <span><?php echo mysqli_num_rows($select_products); ?> Pre-loved Books</span>
+                     <span><?php echo mysqli_num_rows($select_products); ?> Pre-loved Books Available</span>
                   </div>
                   <div class="breadcrumb-stat">
                      <i class="fas fa-leaf"></i>
@@ -121,6 +237,14 @@ $select_products = mysqli_query($conn, "SELECT * FROM thrift_products ORDER BY p
                <?php
                if (mysqli_num_rows($select_products) > 0) {
                    while ($product = mysqli_fetch_assoc($select_products)) {
+                       // Determine stock status
+                       $current_stock = $product['stock'] ?? 1; // Default to 1 for thrift items
+                       $status = $product['status'] ?? 'available';
+                       
+                       $is_out_of_stock = $current_stock <= 0 || $status !== 'available';
+                       $is_low_stock = $current_stock > 0 && $current_stock <= 2;
+                       $stock_class = $is_out_of_stock ? 'out-of-stock' : ($is_low_stock ? 'low-stock' : 'in-stock');
+                       $stock_message = $is_out_of_stock ? 'Not Available' : ($is_low_stock ? "Only $current_stock left!" : "Available");
                ?>
                <form action="" method="post" class="thrift-card">
                   <div class="thrift-badge">
@@ -130,6 +254,13 @@ $select_products = mysqli_query($conn, "SELECT * FROM thrift_products ORDER BY p
                   
                   <div class="thrift-image-container">
                      <img src="uploaded_thrift_img/<?php echo htmlspecialchars($product['image']); ?>" alt="<?php echo htmlspecialchars($product['title']); ?>" class="thrift-image">
+                     
+                     <?php if($is_out_of_stock): ?>
+                        <div class="thrift-stock-badge thrift-badge-out-of-stock">Sold Out</div>
+                     <?php elseif($is_low_stock): ?>
+                        <div class="thrift-stock-badge thrift-badge-low-stock">Low Stock</div>
+                     <?php endif; ?>
+                     
                      <div class="condition-badge condition-<?php echo strtolower(str_replace(' ', '-', $product['condition'])); ?>">
                         <?php echo htmlspecialchars($product['condition']); ?>
                      </div>
@@ -150,6 +281,11 @@ $select_products = mysqli_query($conn, "SELECT * FROM thrift_products ORDER BY p
                         </div>
                      </div>
                      
+                     <div class="thrift-stock-info <?php echo $stock_class; ?>">
+                        <i class="fas fa-cubes"></i>
+                        <span><?php echo $stock_message; ?></span>
+                     </div>
+                     
                      <div class="thrift-price">
                         <span class="price">Rs. <?php echo htmlspecialchars($product['price']); ?></span>
                         <span class="price-note">(Pre-loved)</span>
@@ -157,9 +293,9 @@ $select_products = mysqli_query($conn, "SELECT * FROM thrift_products ORDER BY p
                      
                      <div class="thrift-actions">
                         <input type="hidden" name="thrift_id" value="<?php echo $product['id']; ?>">
-                        <button type="submit" name="add_to_cart" class="btn btn-thrift">
+                        <button type="submit" name="add_to_cart" class="btn btn-thrift" <?php echo $is_out_of_stock ? 'disabled' : ''; ?>>
                            <i class="fas fa-cart-plus"></i>
-                           Add to Cart
+                           <?php echo $is_out_of_stock ? 'Not Available' : 'Add to Cart'; ?>
                         </button>
                      </div>
                      
@@ -181,7 +317,7 @@ $select_products = mysqli_query($conn, "SELECT * FROM thrift_products ORDER BY p
                       </div>
                       <h3>No Thrift Books Available</h3>
                       <p>Be the first to list a pre-loved book and help build our thrift community!</p>
-                      <a href="#" class="btn btn-secondary">Sell Your Books</a>
+                      <a href="add_thrift_book.php" class="btn btn-secondary">Sell Your Books</a>
                    </div>
                    ';
                }
@@ -246,6 +382,16 @@ $select_products = mysqli_query($conn, "SELECT * FROM thrift_products ORDER BY p
                message.remove();
             }, 300);
          }, 5000);
+      });
+
+      // Disable form submission for out-of-stock items
+      document.querySelectorAll('form.thrift-card').forEach(form => {
+         const submitBtn = form.querySelector('button[type="submit"]');
+         if(submitBtn.disabled) {
+            form.addEventListener('submit', (e) => {
+               e.preventDefault();
+            });
+         }
       });
    </script>
 </body>

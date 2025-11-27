@@ -3,6 +3,16 @@ error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
 session_start();
+// Display info message from redirect
+if(isset($_SESSION['info_message'])){
+   echo '
+   <div class="message info">
+      <span>'.$_SESSION['info_message'].'</span>
+      <i class="fas fa-times" onclick="this.parentElement.remove();"></i>
+   </div>
+   ';
+   unset($_SESSION['info_message']); // Clear the message after displaying
+}
 include 'config.php';
 include 'recommendations.php';
 
@@ -17,6 +27,7 @@ $message = [];
 /* ======================================================
    ADD TO CART (Supports normal + thrift)
 ====================================================== */
+
 if(isset($_POST['add_to_cart'])){
     $product_id     = $_POST['product_id'];
     $product_name   = $_POST['product_name'];
@@ -51,6 +62,23 @@ if(isset($_POST['add_to_cart'])){
         );
         $message[] = "Added to cart!";
     }
+}
+/* ======================================================
+   UPDATE CART QUANTITY
+====================================================== */
+if(isset($_POST['update_qty_id'])){
+    $id = $_POST['update_qty_id'];
+    $qty = (int)$_POST['new_quantity'];
+
+    if($qty > 0){
+        mysqli_query($conn, 
+            "UPDATE cart SET quantity='$qty' 
+             WHERE id='$id' AND user_id='$user_id'"
+        );
+    }
+
+    header("Location: cart.php");
+    exit;
 }
 
 /* ======================================================
@@ -130,7 +158,18 @@ $cart_count = count($cart_items);
                     </h3>
 
                     <p>Price: Rs. <?= number_format($item['price']) ?>/-</p>
-                    <p>Quantity: <?= $item['quantity'] ?></p>
+                    <form action="cart.php" method="post" class="update-qty-form">
+    <input type="hidden" name="update_qty_id" value="<?= $item['id'] ?>">
+
+    <label>Quantity:</label>
+    <input type="number" 
+           name="new_quantity" 
+           min="1" 
+           value="<?= $item['quantity'] ?>" 
+           class="quantity-input"
+           onchange="this.form.submit()">
+</form>
+
                     <p>Subtotal: Rs. <?= number_format($item['sub_total']) ?>/-</p>
 
                     <a href="cart.php?delete=<?= $item['id'] ?>" class="btn btn-danger">Remove</a>

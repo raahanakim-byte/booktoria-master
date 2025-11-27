@@ -24,6 +24,9 @@ if(empty($cart_items)){
 // -----------------------------
 // 🔵 CASH ON DELIVERY
 // -----------------------------
+// -----------------------------
+// 🔵 CASH ON DELIVERY - UPDATED VERSION
+// -----------------------------
 if(isset($_POST['cod'])){
     $name = mysqli_real_escape_string($conn, $_POST['name']);
     $email = mysqli_real_escape_string($conn, $_POST['email']);
@@ -38,16 +41,29 @@ if(isset($_POST['cod'])){
     $json_items = mysqli_real_escape_string($conn, json_encode($order_items));
     $placed_on = date('Y-m-d H:i:s');
 
+    // 1. Insert order
     mysqli_query($conn, "INSERT INTO orders 
         (user_id,name,number,email,method,address,order_items,total_price,placed_on,payment_status)
         VALUES ('$user_id','$name','$phone','$email','Cash on Delivery','$address','$json_items','$grand_total','$placed_on','pending')
-    ");
+    ") or die(mysqli_error($conn));
 
+    $order_id = mysqli_insert_id($conn);
+
+    // 🆕 2. DECREASE STOCK FOR COD ORDERS TOO
+    foreach($cart_items as $item) {
+        $product_name = mysqli_real_escape_string($conn, $item['name']);
+        $quantity = intval($item['quantity']);
+        
+        mysqli_query($conn, "UPDATE products SET stock = stock - $quantity WHERE name = '$product_name'");
+    }
+
+    // 3. Clear cart
     mysqli_query($conn,"DELETE FROM cart WHERE user_id='$user_id'");
+    
+    $_SESSION['success_message'] = "COD order placed successfully! Stock reserved.";
     header('Location: orders.php');
     exit;
 }
-
 
 // -----------------------------
 // 🔵 KHALTI PAYMENT
